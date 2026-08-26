@@ -586,12 +586,17 @@
             <label for="${idUnico}" class="ml-3 font-semibold text-slate-700 w-full cursor-pointer leading-tight text-sm sm:text-base select-none">${op.texto}</label>
           `;
           
+          const input = div.querySelector('input');
+          // Escuchar cambios nativos en el input para evitar bugs de doble alternancia (double-toggle)
+          input.addEventListener("change", verificarSelecciones);
+          
           div.addEventListener("click", (e) => {
-            const input = div.querySelector('input');
-            if (e.target !== input) {
+            // Si el usuario hace clic en el área vacía del contenedor div, alternamos el estado manualmente
+            if (e.target === div) {
               input.checked = isMultiple ? !input.checked : true;
+              // Disparar el evento de cambio nativo
+              input.dispatchEvent(new Event('change'));
             }
-            verificarSelecciones();
           });
           
           answerArea.appendChild(div);
@@ -1141,7 +1146,10 @@
       const driveRegex = /(?:\/d\/|id=)([\w-]+)/;
       const match = url.match(driveRegex);
       if (match && match[1]) {
-        return `https://docs.google.com/uc?export=download&id=${match[1]}`;
+        // Usamos el endpoint oficial de miniaturas de Google Drive para saltarnos las restricciones
+        // de cookies de terceros y CORS que causan errores 403 en docs.google.com/uc.
+        // El parámetro sz=w1000 garantiza que se descargue en alta resolución (1000px de ancho).
+        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
       }
       return url;
     }
