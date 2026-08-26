@@ -320,6 +320,9 @@
     let isSaving = false;
     let savePayload = null;
 
+    let isMicActivating = false;
+    let micActivatingTimeout = null;
+
     // DOM Elements
     const screenRU = document.getElementById("screenRU");
     const screenSelection = document.getElementById("screenSelection");
@@ -628,7 +631,7 @@
             </svg>
             <span id="micText">Grabar respuesta verbal</span>
           </button>
-          <textarea id="explanationText" readonly rows="4" placeholder="La transcripción de tu voz aparecerá aquí en tiempo real mientras hablas..." class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 font-semibold text-slate-700 text-sm placeholder-slate-300 bg-slate-50/50 cursor-not-allowed select-none"></textarea>
+          <textarea id="explanationText" rows="4" placeholder="La transcripción de tu voz aparecerá aquí en tiempo real. Si lo deseas, puedes corregir o complementar tu respuesta usando el teclado." class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 font-semibold text-slate-700 text-sm placeholder-slate-300"></textarea>
         `;
         answerArea.appendChild(voiceDiv);
         setupVoiceRecognition();
@@ -709,6 +712,13 @@
           recognition.stop();
           detenerGrabacion(btnMic, micText, micIcon, micSpinner);
         } else {
+          // Iniciar ventana de inmunidad de foco (blur) por 3 segundos por si surge ventana de permisos
+          isMicActivating = true;
+          if (micActivatingTimeout) clearTimeout(micActivatingTimeout);
+          micActivatingTimeout = setTimeout(() => {
+            isMicActivating = false;
+          }, 3000);
+
           isRecording = true;
           explanationText.focus();
           recognition.start();
@@ -847,12 +857,17 @@
     function handleIntegrityThreat(e) {
       if (!examStarted || examFinished || isWarningActive) return;
 
-      // Si el navegador bloqueó la pantalla completa (restricción iframe de Google Sites),
-      // ignoramos el evento "blur" (hacer clic fuera del iframe) para evitar falsos positivos
-      // al hacer clic en los márgenes de la página de Google Sites.
-      // Sin embargo, "visibilitychange" (cambiar pestaña/minimizar) seguirá funcionando y activando la advertencia.
-      if (e && e.type === "blur" && !document.fullscreenElement) {
-        return;
+      // Si es un evento blur (pérdida de foco):
+      if (e && e.type === "blur") {
+        // 1. Ignorar si el usuario está activando el micrófono (para evitar la alerta flotante del navegador)
+        if (isMicActivating) {
+          return;
+        }
+        // 2. Si el navegador bloqueó la pantalla completa (restricción iframe de Google Sites),
+        // ignoramos el evento "blur" para evitar falsos positivos al hacer clic en los márgenes de Google Sites.
+        if (!document.fullscreenElement) {
+          return;
+        }
       }
 
       // Iniciar temporizador de 5 segundos para anulación automática
@@ -1094,15 +1109,33 @@
     }
 
     function solicitarPermisoMicrofonoPrevio() {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          const tempRec = new SpeechRecognition();
+          tempRec.continuous = false;
+          tempRec.interimResults = false;
+          tempRec.onstart = () => {
+            // Al iniciarse el canal, el permiso fue concedido. Detenemos de inmediato.
+            tempRec.stop();
+            console.log("SpeechRecognition pre-autorizado con éxito.");
+          };
+          tempRec.onerror = (e) => {
+            console.warn("Pre-autorización fallida o denegada en SpeechRecognition:", e.error);
+          };
+          tempRec.start();
+        } catch (err) {
+          console.warn("Error al inicializar SpeechRecognition para pre-autorización:", err);
+        }
+      } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Fallback secundario con getUserMedia si SpeechRecognition no se puede instanciar previamente
         navigator.mediaDevices.getUserMedia({ audio: true })
           .then(stream => {
-            // Permiso concedido, cerrar el canal inmediatamente para no consumir recursos
             stream.getTracks().forEach(track => track.stop());
-            console.log("Micrófono pre-autorizado con éxito.");
+            console.log("Micrófono pre-autorizado mediante getUserMedia.");
           })
           .catch(err => {
-            console.warn("Permiso de micrófono denegado o no disponible:", err);
+            console.warn("Permiso de micrófono denegado en getUserMedia:", err);
           });
       }
     }
