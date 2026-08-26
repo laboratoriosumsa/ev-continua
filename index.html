@@ -557,9 +557,12 @@
       answerArea.innerHTML = "";
 
       if (q.tipo === "OPCIÓN MÚLTIPLE") {
-        const isMultiple = !!q.seleccionMultiple;
-        const inputType = isMultiple ? "checkbox" : "radio";
-        const inputRadius = isMultiple ? "rounded-md" : "rounded-full";
+        // Para evitar dar pistas al estudiante sobre la cantidad de respuestas correctas,
+        // forzamos a que TODOS los exámenes y preguntas de opción múltiple usen casillas cuadradas (checkboxes).
+        // Así, el alumno nunca sabrá si la pregunta tiene una o múltiples respuestas correctas a menos que analice el enunciado.
+        const isMultiple = true;
+        const inputType = "checkbox";
+        const inputRadius = "rounded-md";
 
         // Mapear cada opción con su índice original (1-based) para no romper la calificación del servidor
         const opcionesMapeadas = q.opciones.map((txt, idx) => ({
@@ -1143,15 +1146,29 @@
 
     function getDirectDriveLink(url) {
       if (!url) return "";
-      const driveRegex = /(?:\/d\/|id=)([\w-]+)/;
-      const match = url.match(driveRegex);
-      if (match && match[1]) {
-        // Usamos el endpoint oficial de miniaturas de Google Drive para saltarnos las restricciones
-        // de cookies de terceros y CORS que causan errores 403 en docs.google.com/uc.
-        // El parámetro sz=w1000 garantiza que se descargue en alta resolución (1000px de ancho).
-        return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+      const trimmed = url.trim();
+      
+      // Si ya tiene formato de CDN de Google, devolverlo directamente
+      if (trimmed.includes("lh3.googleusercontent.com/d/")) {
+        return trimmed;
       }
-      return url;
+      
+      const driveRegex = /(?:\/d\/|id=)([\w-]+)/;
+      const match = trimmed.match(driveRegex);
+      let fileId = "";
+      
+      if (match && match[1]) {
+        fileId = match[1];
+      } else if (trimmed.length >= 25 && trimmed.length <= 50 && !trimmed.includes("/") && !trimmed.includes(".")) {
+        // Soporte si se ingresó directamente el ID en lugar del enlace completo
+        fileId = trimmed;
+      }
+      
+      if (fileId) {
+        // Formato CDN ultra-estable para imágenes públicas de Google Drive
+        return `https://lh3.googleusercontent.com/d/${fileId}`;
+      }
+      return trimmed;
     }
 
     function setupWatermark(text) {
