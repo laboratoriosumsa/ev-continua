@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sistema de Evaluación Continua</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+    .watermark {
+      background-image: repeating-linear-gradient(45deg, rgba(229, 231, 235, 0.1) 0px, rgba(229, 231, 235, 0.1) 100px, transparent 100px, transparent 200px);
+    }
+    .virtual-screen {
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-grow: 1;
+      width: 100%;
+      height: 100%;
+    }
+    .virtual-screen.active {
+      display: flex;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between watermark" oncopy="return false" oncut="return false" oncontextmenu="return false">
+
+  <!-- Marcador de fondo dinámico -->
+  <div id="dynamicWatermark" class="fixed inset-0 pointer-events-none flex flex-wrap justify-center items-center opacity-[0.02] text-5xl font-bold select-none z-0"></div>
+
+  <!-- Cabecera principal -->
+  <header class="bg-indigo-900 text-white shadow-lg z-30 sticky top-0 flex-shrink-0">
+    <div class="max-w-md mx-auto w-full px-4 py-3.5 flex justify-between items-center">
+      <h1 id="headerTitle" class="text-xs sm:text-sm font-extrabold uppercase tracking-wider leading-snug max-w-[70%]">
+        SISTEMA DE EVALUACIÓN CONTINUA INGENIERÍA DE MÉTODOS Y LABORATORIO
+      </h1>
+      <!-- Reloj de cuenta regresiva -->
+      <div id="timerContainer" class="hidden flex items-center bg-indigo-800/80 px-3.5 py-1.5 rounded-full text-base font-black shadow-inner">
+        <svg class="w-4 h-4 mr-1 animate-pulse text-indigo-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span id="countdown" class="font-mono text-sm sm:text-base">00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="flex-grow flex items-center justify-center p-4 sm:p-6 z-10">
+    <div id="mainCard" class="w-full max-w-md bg-white rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.08)] border border-slate-100 p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between min-h-[460px]">
+
+      <!-- ================= PANTALLA 1: INGRESO DE REGISTRO UNIVERSITARIO ================= -->
+      <div id="screenRU" class="virtual-screen active space-y-6">
+        <div class="space-y-6 flex-grow flex flex-col justify-center py-2">
+          <!-- Icono de Graduación Circular -->
+          <div class="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+            </svg>
+          </div>
+          <!-- Textos de Bienvenida -->
+          <div class="text-center space-y-2">
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">Bienvenido al Examen</h2>
+            <p class="text-sm text-slate-400 font-medium">Por favor ingresa tu Registro Universitario</p>
+          </div>
+          <!-- Input de Registro -->
+          <div class="space-y-2">
+            <input type="text" id="registroInput" placeholder="EJ. 21908754" 
+              class="w-full px-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 text-center font-bold tracking-wider text-xl transition duration-200 uppercase text-slate-700 placeholder-slate-300">
+          </div>
+        </div>
+        <!-- Botón de Continuar -->
+        <button id="btnContinuar" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-200/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center space-x-2 text-base">
+          <span>Continuar</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        </button>
+        <!-- Alertas de Estado -->
+        <div id="statusAlert" class="hidden rounded-2xl p-4 text-xs font-semibold border transition-all duration-300 flex items-start space-x-2.5"></div>
+      </div>
+
+      <!-- ================= PANTALLA 2: SELECCIÓN Y VERIFICACIÓN DE EXAMEN ================= -->
+      <div id="screenSelection" class="virtual-screen space-y-6">
+        <div class="space-y-6 flex-grow flex flex-col justify-center py-2">
+          <!-- Saludo de Bienvenida -->
+          <div id="welcomeMessage" class="rounded-2xl p-4 text-xs font-semibold border bg-emerald-50 border-emerald-200 text-emerald-800 flex items-start space-x-2.5"></div>
+          
+          <!-- Dropdown Selección -->
+          <div class="space-y-2">
+            <label for="examSelect" class="block text-xs font-bold uppercase tracking-widest text-slate-400">Elija el examen que corresponda:</label>
+            <div class="relative">
+              <select id="examSelect" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 bg-white focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 text-slate-700 font-bold text-sm cursor-pointer appearance-none transition-all duration-200">
+                <option value="" disabled selected>-- Seleccione un examen --</option>
+                <option value="DIAGRAMAS DE FLUJO">DIAGRAMAS DE FLUJO</option>
+                <option value="SISTEMAS PRODUCTIVOS">SISTEMAS PRODUCTIVOS</option>
+                <option value="TEORÍA DE RESTRICCIONES">TEORÍA DE RESTRICCIONES</option>
+                <option value="MEDICIÓN DEL DESEMPEÑO">MEDICIÓN DEL DESEMPEÑO</option>
+                <option value="ESTUDIO DE MÉTODOS">ESTUDIO DE MÉTODOS</option>
+                <option value="MAPA VSM">MAPA VSM</option>
+                <option value="EVALUACIÓN DEL PLAN DE MEJORA">EVALUACIÓN DEL PLAN DE MEJORA</option>
+                <option value="MEDICIÓN DEL TRABAJO">MEDICIÓN DEL TRABAJO</option>
+                <option value="TEORÍA DEL DESPILFARRO">TEORÍA DEL DESPILFARRO</option>
+                <option value="BALANCEO DE LÍNEA">BALANCEO DE LÍNEA</option>
+              </select>
+              <div class="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Alerta específica de verificación del Examen -->
+          <div id="examAlert" class="hidden rounded-2xl p-4 text-xs font-semibold border transition-all duration-300 flex items-start space-x-2.5"></div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="flex-shrink-0 space-y-2">
+          <button id="btnVerificarExamen" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 text-base text-center">
+            <span>Verificar</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </button>
+          <button id="btnIrAInstrucciones" class="hidden w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all duration-200 flex items-center justify-center space-x-2 text-base text-center">
+            <span>Comenzar Examen</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================= PANTALLA 3: INSTRUCCIONES DE LA EVALUACIÓN ================= -->
+      <div id="screenInstructions" class="virtual-screen space-y-6">
+        <div class="space-y-4 flex-grow flex flex-col justify-center py-4">
+          <div class="text-center space-y-2">
+            <div class="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-1">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Instrucciones de la Evaluación</h2>
+            <p class="text-sm text-slate-500 font-medium">Por favor lee con atención las reglas del examen.</p>
+          </div>
+
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2.5 text-xs text-amber-800 text-left">
+            <p class="font-bold text-sm">Normas de Integridad:</p>
+            <ul class="list-disc pl-4 space-y-1">
+              <li>El examen se realiza en modo de <strong>Pantalla Completa</strong> obligatorio.</li>
+              <li>Si cambias de pestaña, ventana o sales de pantalla completa por <strong>más de 5 segundos</strong>, el examen se anulará automáticamente.</li>
+              <li>Al <strong>2do evento cambio de ventana</strong>, el examen se auto-enviará de forma <strong>ANULADA</strong> de inmediato.</li>
+              <li>Si tu examen incluye preguntas de <strong>Grabación de Voz</strong>, autoriza el acceso al micrófono de tu dispositivo para transcribir la respuesta verbal.</li>
+            </ul>
+          </div>
+        </div>
+
+        <button id="btnEntrarExamen" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg active:scale-[0.99] transition duration-200 text-base">
+          Comenzar e ir a Pantalla Completa
+        </button>
+      </div>
+
+      <!-- ================= PANTALLA 4: MOTOR DE PREGUNTAS ================= -->
+      <div id="screenQuiz" class="hidden virtual-screen space-y-4">
+        <!-- Indicador de Progreso -->
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2 flex-shrink-0">
+          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pregunta <span id="currentQuestionNum">1</span> de <span id="totalQuestionsNum">10</span></span>
+          <span id="warningBadge" class="hidden bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Advertencias: <span id="warningDisplayCount">0</span>/1</span>
+        </div>
+
+        <!-- Pregunta y Área de Respuesta -->
+        <div class="space-y-4 flex-grow flex flex-col justify-center overflow-y-auto py-2">
+          
+          <!-- Imagen de Apoyo -->
+          <div id="imageSupportContainer" class="hidden w-full flex justify-center bg-slate-50 p-2 rounded-xl border border-slate-100/60 shadow-sm max-h-48 overflow-hidden">
+            <img id="imageSupport" src="" alt="Soporte visual" class="max-h-44 object-contain rounded-lg">
+          </div>
+
+          <!-- Pregunta -->
+          <h3 id="questionText" class="text-base sm:text-lg font-bold text-slate-800 leading-snug">Cargando pregunta...</h3>
+          
+          <!-- Respuestas dinámicas -->
+          <div id="answerArea" class="space-y-3 pt-2">
+            <!-- Inyectado dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Botón de Siguiente Pregunta -->
+        <button id="btnSiguiente" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3.5 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed flex-shrink-0 text-base">
+          <span>Siguiente Pregunta</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+      </div>
+
+      <!-- ================= PANTALLA 4.5: GUARDANDO RESPUESTAS (BLOQUEO DE SALIDA) ================= -->
+      <div id="screenSaving" class="hidden virtual-screen text-center space-y-6 flex-col justify-center items-center py-10">
+        <div class="flex-grow flex flex-col justify-center space-y-6">
+          <div class="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-2">
+            <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <div class="space-y-3">
+            <h3 class="text-xl font-bold text-slate-800">Guardando respuestas...</h3>
+            <p class="text-xs text-slate-400 font-semibold max-w-xs mx-auto leading-relaxed">
+              Por favor, <strong>no cierres esta ventana ni retrocedas</strong>. Estamos registrando y calificando tu examen de forma segura en el servidor.
+            </p>
+          </div>
+          <div id="savingRetryContainer" class="hidden space-y-3 max-w-xs mx-auto">
+            <div class="bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-2xl p-3 flex items-start space-x-2">
+              <svg class="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              <span>Error de red. No se pudo guardar en Google Sheets.</span>
+            </div>
+            <button id="btnRetrySave" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm">
+              Reintentar Guardar Respuestas
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PANTALLA 5: RESULTADO FINAL (DINÁMICO) ================= -->
+      <div id="screenResult" class="hidden virtual-screen text-center space-y-6">
+        <div class="flex-grow flex flex-col justify-center space-y-6 py-6">
+          <div id="resultIcon" class="mx-auto w-20 h-20 rounded-full flex items-center justify-center text-white shadow-lg mb-2 bg-emerald-500 animate-bounce">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+
+          <div class="space-y-3">
+            <h2 id="resultTitle" class="text-2xl font-bold text-slate-900 leading-tight">Examen Finalizado</h2>
+            <div id="resultScoreContainer" class="hidden space-y-1.5 py-3 px-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/60 max-w-xs mx-auto text-indigo-800">
+              <p class="text-sm font-semibold text-indigo-500 uppercase tracking-widest">Tu Calificación:</p>
+              <p class="text-3xl font-black font-mono"><span id="lblNota">-</span> / <span id="lblTotal">-</span></p>
+              <p class="text-sm font-extrabold uppercase tracking-wide">Estado: <span id="lblEstado">-</span></p>
+            </div>
+            <p id="resultSubtitle" class="hidden text-base font-semibold text-indigo-600 bg-indigo-50/50 py-3.5 px-4 rounded-2xl border border-indigo-100/60 max-w-sm mx-auto">
+              Pronto recibirás la calificación
+            </p>
+          </div>
+
+          <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 text-left space-y-3 text-sm">
+            <div class="flex justify-between items-center border-b border-slate-200/50 pb-2">
+              <span class="text-slate-500 font-medium">Estudiante:</span>
+              <span id="resRegistro" class="font-bold text-slate-800">-</span>
+            </div>
+            <div class="flex justify-between items-center border-b border-slate-200/50 pb-2">
+              <span class="text-slate-500 font-medium">Examen:</span>
+              <span id="resExamen" class="font-bold text-slate-800">-</span>
+            </div>
+            <div id="resAdvertenciasRow" class="flex justify-between items-center">
+              <span class="text-slate-500 font-medium">Advertencias:</span>
+              <span id="resAdvertencias" class="font-bold text-red-600">-</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-400 font-medium flex-shrink-0">
+          Tus respuestas han sido guardadas. Puedes cerrar esta ventana.
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Pie de página con información de contacto -->
+  <footer class="bg-slate-100 py-3 text-center border-t border-slate-200 z-10 flex-shrink-0">
+    <p class="text-slate-700 text-sm font-semibold tracking-wide">jpfernandez3@umsa.bo</p>
+    <p class="text-slate-400 text-xs mt-0.5 font-medium">Contacto</p>
+  </footer>
+
+  <!-- ================= CAPA DE ADVERTENCIA (INTERRUPCIÓN) ================= -->
+  <div id="warningOverlay" class="fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center space-y-5 shadow-2xl">
+      <div class="mx-auto w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+        <svg class="w-10 h-10 animate-bounce" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      </div>
+
+      <div class="space-y-2">
+        <h3 class="text-lg font-bold text-slate-800">¡Alerta de Integridad!</h3>
+        <p class="text-xs text-slate-500 font-medium">Se detectó una interrupción en el examen.</p>
+        <div class="bg-red-50 text-red-800 text-xs font-semibold rounded-lg p-2.5 mt-1" id="warningDetail">
+          Motivo: Salida de pantalla
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div class="text-sm font-medium text-slate-700">
+          Advertencias restantes antes de la anulación: <span id="warningOverlayRemaining" class="font-bold text-red-600">1</span>/1
+        </div>
+        <button id="btnReanudar" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition duration-200 text-sm">
+          Reanudar Examen
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Principal -->
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzoSRuOvSbMDVAXm4xETDdUvPsrgHEw-v7NovLVtsLZgpabF1meRiFpm4FMdXwBpVcq5A/exec";
+
+    // Variables de Estado
+    let studentData = null;
+    let currentRegistro = "";
+    let selectedExam = "";
+    let questions = [];
+    let currentQuestionIndex = 0;
+    
+    let studentAnswers = []; // [{ id, pregunta, respuestaTexto }]
+    let totalSeconds = 0;
+    let initialTotalSeconds = 0;
+    let timerInterval = null;
+
+    let examStarted = false;
+    let examFinished = false;
+    let isWarningActive = false;
+    let warningCount = 0;
+    const maxWarningsAllowed = 1;
+    let warningHistory = [];
+    let tabTimeout = null;
+
+    let isSaving = false;
+    let savePayload = null;
+
+    // DOM Elements
+    const screenRU = document.getElementById("screenRU");
+    const screenSelection = document.getElementById("screenSelection");
+    const screenInstructions = document.getElementById("screenInstructions");
+    const screenQuiz = document.getElementById("screenQuiz");
+    const screenResult = document.getElementById("screenResult");
+    const warningOverlay = document.getElementById("warningOverlay");
+    
+    const registroInput = document.getElementById("registroInput");
+    const btnContinuar = document.getElementById("btnContinuar");
+    const btnVerificarExamen = document.getElementById("btnVerificarExamen");
+    const btnIrAInstrucciones = document.getElementById("btnIrAInstrucciones");
+    const btnEntrarExamen = document.getElementById("btnEntrarExamen");
+    const btnSiguiente = document.getElementById("btnSiguiente");
+    const btnReanudar = document.getElementById("btnReanudar");
+    
+    const statusAlert = document.getElementById("statusAlert");
+    const welcomeMessage = document.getElementById("welcomeMessage");
+    const examSelect = document.getElementById("examSelect");
+    const examAlert = document.getElementById("examAlert");
+    
+    const timerContainer = document.getElementById("timerContainer");
+    const countdown = document.getElementById("countdown");
+    const currentQuestionNum = document.getElementById("currentQuestionNum");
+    const totalQuestionsNum = document.getElementById("totalQuestionsNum");
+    const warningBadge = document.getElementById("warningBadge");
+    const warningDisplayCount = document.getElementById("warningDisplayCount");
+    const warningDetail = document.getElementById("warningDetail");
+    const warningOverlayRemaining = document.getElementById("warningOverlayRemaining");
+    
+    const imageSupportContainer = document.getElementById("imageSupportContainer");
+    const imageSupport = document.getElementById("imageSupport");
+    const questionText = document.getElementById("questionText");
+    const answerArea = document.getElementById("answerArea");
+    
+    const resRegistro = document.getElementById("resRegistro");
+    const resExamen = document.getElementById("resExamen");
+    const resAdvertencias = document.getElementById("resAdvertencias");
+    const headerTitle = document.getElementById("headerTitle");
+
+    // ==========================================
+    // PANTALLA 1: CONTINUAR (Verificación de RU)
+    // ==========================================
+    btnContinuar.addEventListener("click", async () => {
+      const registro = registroInput.value.trim().toUpperCase();
+      
+      if (!registro || registro.length < 4) {
+        showAlert(statusAlert, "Por favor, ingresa un Registro Universitario válido (mínimo 4 caracteres).", "error");
+        return;
+      }
+
+      clearAlert(statusAlert);
+      clearAlert(examAlert);
+      
+      btnContinuar.disabled = true;
+      btnContinuar.innerHTML = `
+        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      `;
+
+      try {
+        const response = await fetch(`${SCRIPT_URL}?registro=${encodeURIComponent(registro)}`);
+        const data = await response.json();
+
+        if (data.exists) {
+          studentData = data;
+          currentRegistro = registro;
+          setupWatermark(registro);
+          
+          welcomeMessage.innerHTML = `
+            <svg class="w-4 h-4 shrink-0 text-emerald-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="ml-2">Bienvenido, <strong>${data.nombre}</strong>. Por favor, selecciona la evaluación a realizar.</span>
+          `;
+          
+          transitionScreen(screenRU, screenSelection);
+        } else {
+          showAlert(statusAlert, "Usuario no Registrado en la lista Oficial de Ingeniería de Métodos, verifique que haya ingresado bien su Registro Universitario.", "error");
+        }
+      } catch (err) {
+        console.error("Error al verificar estudiante:", err);
+        showAlert(statusAlert, "Error de comunicación: No se pudo verificar tu registro en el servidor. Inténtalo de nuevo.", "error");
+      } finally {
+        btnContinuar.disabled = false;
+        btnContinuar.innerHTML = `
+          <span>Continuar</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        `;
+      }
+    });
+
+    // ==========================================
+    // PANTALLA 2: SELECCIÓN Y VERIFICACIÓN
+    // ==========================================
+    examSelect.addEventListener("change", () => {
+      clearAlert(examAlert);
+      btnVerificarExamen.classList.add("hidden");
+      btnIrAInstrucciones.classList.add("hidden");
+
+      selectedExam = examSelect.value;
+      if (studentData && selectedExam) {
+        btnVerificarExamen.classList.remove("hidden");
+      }
+    });
+
+    btnVerificarExamen.addEventListener("click", async () => {
+      clearAlert(examAlert);
+      btnIrAInstrucciones.classList.add("hidden");
+
+      if (!currentRegistro || !selectedExam) return;
+
+      btnVerificarExamen.disabled = true;
+      const originalText = btnVerificarExamen.innerHTML;
+      btnVerificarExamen.innerHTML = `
+        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      `;
+
+      try {
+        // Consulta live al backend para validar Resultados_Examen
+        const response = await fetch(`${SCRIPT_URL}?registro=${encodeURIComponent(currentRegistro)}`);
+        const data = await response.json();
+
+        if (!data.exists) {
+          showAlert(examAlert, "El registro del estudiante no se encuentra en la lista oficial.", "error");
+          return;
+        }
+
+        studentData = data;
+        const examInfo = studentData.examenes[selectedExam];
+
+        if (!examInfo) {
+          showAlert(examAlert, "Error al recuperar la información de este examen.", "error");
+          return;
+        }
+
+        if (!examInfo.habilitado) {
+          showAlert(examAlert, "Examen no habilitado por asistencia, consulte con el Docente.", "warning");
+          return;
+        }
+
+        if (examInfo.completado) {
+          showAlert(examAlert, "Solo se permite responder una sola vez el examen.", "warning");
+          return;
+        }
+
+        showAlert(examAlert, "Estudiante Habilitado", "success");
+        btnVerificarExamen.classList.add("hidden");
+        btnIrAInstrucciones.classList.remove("hidden");
+
+      } catch (err) {
+        console.error("Error en la verificación en tiempo real:", err);
+        showAlert(examAlert, "Error de comunicación con el servidor al verificar.", "error");
+      } finally {
+        btnVerificarExamen.disabled = false;
+        btnVerificarExamen.innerHTML = originalText;
+      }
+    });
+
+    // ==========================================
+    // PANTALLA 3: IR A INSTRUCCIONES
+    // ==========================================
+    btnIrAInstrucciones.addEventListener("click", () => {
+      transitionScreen(screenSelection, screenInstructions);
+    });
+
+    // ==========================================
+    // PANTALLA 4: COMENZAR EXAMEN (Cargar Preguntas)
+    // ==========================================
+    btnEntrarExamen.addEventListener("click", async () => {
+      btnEntrarExamen.disabled = true;
+      btnEntrarExamen.innerText = "Cargando examen...";
+
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=getQuestions&registro=${encodeURIComponent(currentRegistro)}&examen=${encodeURIComponent(selectedExam)}`);
+        const responseData = await response.json();
+
+        if (responseData.error) {
+          throw new Error(responseData.error);
+        }
+
+        questions = responseData.preguntas;
+        totalSeconds = responseData.tiempoExamen || 240;
+      } catch (err) {
+        console.error("Error al obtener preguntas:", err);
+        alert("Error de red al obtener preguntas. Cargando banco offline de pruebas.");
+        // Fallback
+        questions = [
+          { id: 1, tipo: "OPCIÓN MÚLTIPLE", pregunta: "Prueba Offline: ¿Cuál es un tipo de desperdicio?", opciones: ["Sobreproducción", "Talento", "Transporte"], seleccionMultiple: false },
+          { id: 2, tipo: "RESPUESTA CORTA", pregunta: "Prueba Offline: Sigla que significa 'Mapeo de Flujo de Valor'" },
+          { id: 3, tipo: "EXPLICACIÓN", pregunta: "Prueba Offline: Explica verbalmente qué es un cuello de botella." }
+        ];
+        totalSeconds = 120;
+      }
+
+      initialTotalSeconds = totalSeconds;
+      totalQuestionsNum.innerText = questions.length;
+      
+      solicitarPantallaCompleta();
+      transitionScreen(screenInstructions, screenQuiz);
+      
+      headerTitle.innerText = `EVALUACIÓN: ${selectedExam}`;
+      timerContainer.classList.remove("hidden");
+      warningBadge.classList.remove("hidden");
+      
+      examStarted = true;
+      iniciarTemporizador();
+      cargarPregunta(0);
+    });
+
+    // ==========================================
+    // RENDERIZADO DINÁMICO DE PREGUNTAS
+    // ==========================================
+    function cargarPregunta(index) {
+      currentQuestionIndex = index;
+      currentQuestionNum.innerText = index + 1;
+      desactivarBotonSiguiente();
+      
+      const q = questions[index];
+
+      // Imagen de apoyo
+      if (q.imagen && q.imagen.trim()) {
+        imageSupport.src = getDirectDriveLink(q.imagen.trim());
+        imageSupportContainer.classList.remove("hidden");
+      } else {
+        imageSupportContainer.classList.add("hidden");
+        imageSupport.src = "";
+      }
+
+      // Enunciado
+      questionText.innerText = q.pregunta;
+      answerArea.innerHTML = "";
+
+      if (q.tipo === "OPCIÓN MÚLTIPLE") {
+        const isMultiple = !!q.seleccionMultiple;
+        const inputType = isMultiple ? "checkbox" : "radio";
+        const inputRadius = isMultiple ? "rounded-md" : "rounded-full";
+
+        // Mapear cada opción con su índice original (1-based) para no romper la calificación del servidor
+        const opcionesMapeadas = q.opciones.map((txt, idx) => ({
+          indexOrig: idx + 1,
+          texto: txt
+        }));
+
+        // Mezclar las opciones aleatoriamente para cada alumno usando el algoritmo de Fisher-Yates
+        for (let i = opcionesMapeadas.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = opcionesMapeadas[i];
+          opcionesMapeadas[i] = opcionesMapeadas[j];
+          opcionesMapeadas[j] = temp;
+        }
+        const shuffledOpciones = opcionesMapeadas;
+
+        shuffledOpciones.forEach((op) => {
+          const div = document.createElement("div");
+          div.className = "flex items-center border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 rounded-xl p-4 cursor-pointer transition duration-150 select-none relative";
+          
+          const idUnico = `opcion_${index}_${op.indexOrig}`;
+          div.innerHTML = `
+            <input type="${inputType}" id="${idUnico}" name="opciones_examen" value="${op.indexOrig}" class="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer accent-indigo-600 ${inputRadius} flex-shrink-0">
+            <label for="${idUnico}" class="ml-3 font-semibold text-slate-700 w-full cursor-pointer leading-tight text-sm sm:text-base select-none">${op.texto}</label>
+          `;
+          
+          div.addEventListener("click", (e) => {
+            const input = div.querySelector('input');
+            if (e.target !== input) {
+              input.checked = isMultiple ? !input.checked : true;
+            }
+            verificarSelecciones();
+          });
+          
+          answerArea.appendChild(div);
+        });
+
+      } else if (q.tipo === "RESPUESTA CORTA") {
+        const input = document.createElement("input");
+        input.type = "text";
+        input.id = "shortAnswerInput";
+        input.placeholder = "Escribe tu respuesta aquí...";
+        input.className = "w-full px-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 font-semibold text-slate-700 text-sm placeholder-slate-300";
+        input.addEventListener("input", verificarSelecciones);
+        answerArea.appendChild(input);
+
+      } else if (q.tipo === "EXPLICACIÓN") {
+        const voiceDiv = document.createElement("div");
+        voiceDiv.className = "space-y-4";
+        voiceDiv.innerHTML = `
+          <button id="btnMic" type="button" class="w-full py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-2xl border border-indigo-200 flex items-center justify-center space-x-2 transition-all duration-200 active:scale-[0.99]">
+            <svg id="micSpinner" class="animate-spin h-5 w-5 text-indigo-600 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg id="micIcon" class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"></path>
+            </svg>
+            <span id="micText">Iniciar Grabación de Voz</span>
+          </button>
+          <textarea id="explanationText" rows="4" placeholder="La transcripción de tu voz aparecerá aquí. Si deseas, puedes editar o complementar la respuesta manualmente en este cuadro." class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 font-semibold text-slate-700 text-sm placeholder-slate-300"></textarea>
+        `;
+        answerArea.appendChild(voiceDiv);
+        setupVoiceRecognition();
+      }
+    }
+
+    // ==========================================
+    // RECONOCIMIENTO DE VOZ (Speech-to-Text)
+    // ==========================================
+    let recognition = null;
+    let isRecording = false;
+
+    function setupVoiceRecognition() {
+      const btnMic = document.getElementById("btnMic");
+      const micText = document.getElementById("micText");
+      const micIcon = document.getElementById("micIcon");
+      const micSpinner = document.getElementById("micSpinner");
+      const explanationText = document.getElementById("explanationText");
+
+      explanationText.addEventListener("input", verificarSelecciones);
+
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        micText.innerText = "Micrófono no compatible";
+        btnMic.disabled = true;
+        btnMic.className = "w-full py-4 bg-slate-100 text-slate-400 font-bold rounded-2xl border border-slate-200 cursor-not-allowed flex items-center justify-center space-x-2";
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'es-ES';
+
+      recognition.onresult = (event) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          explanationText.value += (explanationText.value ? ' ' : '') + finalTranscript;
+          verificarSelecciones();
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech error:", event.error);
+        detenerGrabacion(btnMic, micText, micIcon, micSpinner);
+      };
+
+      recognition.onend = () => {
+        if (isRecording) {
+          recognition.start();
+        }
+      };
+
+      btnMic.addEventListener("click", () => {
+        if (isRecording) {
+          isRecording = false;
+          recognition.stop();
+          detenerGrabacion(btnMic, micText, micIcon, micSpinner);
+        } else {
+          isRecording = true;
+          explanationText.focus();
+          recognition.start();
+          iniciarGrabacionVisual(btnMic, micText, micIcon, micSpinner);
+        }
+      });
+    }
+
+    function iniciarGrabacionVisual(btn, text, icon, spinner) {
+      text.innerText = "Escuchando... Haz clic para detener";
+      btn.classList.remove("bg-indigo-50", "text-indigo-600", "border-indigo-200");
+      btn.classList.add("bg-rose-50", "text-rose-600", "border-rose-200", "animate-pulse");
+      icon.classList.add("hidden");
+      spinner.classList.remove("hidden");
+    }
+
+    function detenerGrabacion(btn, text, icon, spinner) {
+      text.innerText = "Iniciar Grabación de Voz";
+      btn.classList.remove("bg-rose-50", "text-rose-600", "border-rose-200", "animate-pulse");
+      btn.classList.add("bg-indigo-50", "text-indigo-600", "border-indigo-200");
+      icon.classList.remove("hidden");
+      spinner.classList.add("hidden");
+    }
+
+    // ==========================================
+    // VALIDACIÓN DE LLENADO DE RESPUESTA
+    // ==========================================
+    function verificarSelecciones() {
+      const q = questions[currentQuestionIndex];
+      let respondida = false;
+
+      if (q.tipo === "OPCIÓN MÚLTIPLE") {
+        const seleccionados = document.querySelectorAll('input[name="opciones_examen"]:checked');
+        respondida = seleccionados.length > 0;
+      } else if (q.tipo === "RESPUESTA CORTA") {
+        const input = document.getElementById("shortAnswerInput");
+        respondida = input && input.value.trim().length > 0;
+      } else if (q.tipo === "EXPLICACIÓN") {
+        const text = document.getElementById("explanationText");
+        respondida = text && text.value.trim().length > 0;
+      }
+
+      if (respondida) {
+        activarBotonSiguiente();
+      } else {
+        desactivarBotonSiguiente();
+      }
+    }
+
+    function desactivarBotonSiguiente() {
+      btnSiguiente.disabled = true;
+      btnSiguiente.className = "w-full bg-slate-200 text-slate-400 font-bold py-3.5 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed flex-shrink-0 text-base";
+    }
+
+    function activarBotonSiguiente() {
+      btnSiguiente.disabled = false;
+      btnSiguiente.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-100 active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2 cursor-pointer flex-shrink-0 text-base sm:text-lg";
+    }
+
+    // ==========================================
+    // CONTROL DE NAVEGACIÓN
+    // ==========================================
+    btnSiguiente.addEventListener("click", () => {
+      if (isRecording && recognition) {
+        isRecording = false;
+        recognition.stop();
+      }
+
+      const q = questions[currentQuestionIndex];
+      let respuestaTexto = "";
+
+      if (q.tipo === "OPCIÓN MÚLTIPLE") {
+        const seleccionados = document.querySelectorAll('input[name="opciones_examen"]:checked');
+        respuestaTexto = Array.from(seleccionados).map(el => el.value).join(",");
+      } else if (q.tipo === "RESPUESTA CORTA") {
+        respuestaTexto = document.getElementById("shortAnswerInput").value.trim();
+      } else if (q.tipo === "EXPLICACIÓN") {
+        respuestaTexto = document.getElementById("explanationText").value.trim();
+      }
+
+      studentAnswers.push({
+        id: q.id,
+        pregunta: q.pregunta,
+        respuestaTexto: respuestaTexto
+      });
+
+      if (currentQuestionIndex + 1 < questions.length) {
+        cargarPregunta(currentQuestionIndex + 1);
+      } else {
+        finalizarPrueba("Completado");
+      }
+    });
+
+    // ==========================================
+    // TEMPORIZADOR DEL EXAMEN
+    // ==========================================
+    function iniciarTemporizador() {
+      actualizarRelojVisual();
+      
+      timerInterval = setInterval(() => {
+        if (!isWarningActive) {
+          totalSeconds--;
+          actualizarRelojVisual();
+          
+          if (totalSeconds <= 0) {
+            clearInterval(timerInterval);
+            finalizarPrueba("Tiempo Agotado");
+          }
+        }
+      }, 1000);
+    }
+
+    function actualizarRelojVisual() {
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      countdown.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      
+      if (totalSeconds <= 30) {
+        timerContainer.classList.remove("bg-indigo-800/80");
+        timerContainer.classList.add("bg-red-600", "animate-pulse");
+      }
+    }
+
+    // ==========================================
+    // SISTEMA ANTI-TRAMPA CON REGLA DE 5 SEGUNDOS
+    // ==========================================
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        handleIntegrityThreat({ type: "visibilitychange" });
+      }
+    });
+    window.addEventListener("blur", () => {
+      handleIntegrityThreat({ type: "blur" });
+    });
+
+    function handleIntegrityThreat(e) {
+      if (!examStarted || examFinished || isWarningActive) return;
+
+      // Si el navegador bloqueó la pantalla completa (restricción iframe de Google Sites),
+      // ignoramos el evento "blur" (hacer clic fuera del iframe) para evitar falsos positivos
+      // al hacer clic en los márgenes de la página de Google Sites.
+      // Sin embargo, "visibilitychange" (cambiar pestaña/minimizar) seguirá funcionando y activando la advertencia.
+      if (e && e.type === "blur" && !document.fullscreenElement) {
+        return;
+      }
+
+      // Iniciar temporizador de 5 segundos para anulación automática
+      tabTimeout = setTimeout(() => {
+        finalizarPrueba("Anulado por fraude", "Salida de pantalla por más de 5 segundos");
+      }, 5000);
+
+      lanzarAdvertencia("Pérdida de foco o salida de pestaña del navegador");
+    }
+
+    // Al regresar / enfocar
+    window.addEventListener("focus", () => {
+      if (tabTimeout) {
+        clearTimeout(tabTimeout);
+        tabTimeout = null;
+      }
+    });
+    document.addEventListener("fullscreenchange", () => {
+      // Solo advertir si el navegador permitió entrar a pantalla completa inicialmente
+      if (examStarted && !examFinished && !document.fullscreenElement) {
+        // Si el navegador no soporta pantalla completa en el iframe, no lanzamos advertencia.
+        if (document.fullscreenEnabled) {
+          lanzarAdvertencia("Salida del modo pantalla completa");
+        }
+      }
+    });
+
+    function lanzarAdvertencia(motivo) {
+      if (examFinished || !examStarted) return;
+      
+      warningCount++;
+      warningDisplayCount.innerText = warningCount;
+      
+      const timestamp = new Date().toLocaleTimeString();
+      warningHistory.push(`[${timestamp}] ${motivo}`);
+      
+      if (warningCount > maxWarningsAllowed) {
+        finalizarPrueba("Anulado por fraude", motivo);
+        return;
+      }
+      
+      isWarningActive = true;
+      warningDetail.innerText = `Motivo: ${motivo}`;
+      warningOverlayRemaining.innerText = maxWarningsAllowed - warningCount + 1;
+      warningOverlay.classList.remove("hidden");
+    }
+
+    btnReanudar.addEventListener("click", () => {
+      solicitarPantallaCompleta();
+      warningOverlay.classList.add("hidden");
+      
+      setTimeout(() => {
+        isWarningActive = false;
+      }, 1000);
+    });
+
+    // ==========================================
+    // GUARDADO Y RESULTADOS DINÁMICOS
+    // ==========================================
+    async function finalizarPrueba(motivoFin, detalleAnulacion = "") {
+      examFinished = true;
+      clearInterval(timerInterval);
+      if (tabTimeout) clearTimeout(tabTimeout);
+      
+      warningOverlay.classList.add("hidden");
+      timerContainer.classList.add("hidden");
+
+      if (isRecording && recognition) {
+        isRecording = false;
+        recognition.stop();
+      }
+
+      // Cerrar pantalla completa si está activa
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(e => console.log(e));
+      }
+
+      // Capturar respuesta actual y rellenar las no alcanzadas
+      capturarRespuestaActual();
+      questions.forEach(q => {
+        const yaRespondida = studentAnswers.some(a => a.id === q.id);
+        if (!yaRespondida) {
+          studentAnswers.push({
+            id: q.id,
+            pregunta: q.pregunta,
+            respuestaTexto: ""
+          });
+        }
+      });
+
+      const advFinal = warningHistory.length > 0 
+        ? warningHistory.join(" | ") + (detalleAnulacion ? ` | ANULACIÓN: ${detalleAnulacion}` : "") 
+        : (detalleAnulacion ? `ANULACIÓN: ${detalleAnulacion}` : "Ninguna");
+
+      savePayload = {
+        registro: currentRegistro,
+        examen: selectedExam,
+        estado: (motivoFin === "Anulado por fraude" || (motivoFin === "Tiempo Agotado" && warningCount > maxWarningsAllowed)) ? "Anulado" : "Pendiente",
+        tiempo_empleado: initialTotalSeconds - totalSeconds,
+        advertencias: advFinal,
+        respuestas: studentAnswers
+      };
+
+      // Cargar resumen básico en pantalla de resultados
+      resRegistro.innerText = currentRegistro;
+      resExamen.innerText = selectedExam;
+      resAdvertencias.innerText = warningCount;
+
+      // Cambiar a pantalla de "Guardando respuestas" y bloquear salida accidental
+      transitionScreen(screenQuiz, document.getElementById("screenSaving"));
+      isSaving = true;
+      window.addEventListener("beforeunload", preventTabClose);
+
+      enviarRespuestasAlServidor(detalleAnulacion);
+    }
+
+    function preventTabClose(e) {
+      if (isSaving) {
+        e.preventDefault();
+        e.returnValue = "Tus respuestas se están enviando al servidor. Si cierras la ventana ahora, tu examen no se registrará.";
+        return e.returnValue;
+      }
+    }
+
+    async function enviarRespuestasAlServidor(detalleAnulacion = "") {
+      const btnRetry = document.getElementById("btnRetrySave");
+      const retryContainer = document.getElementById("savingRetryContainer");
+      
+      retryContainer.classList.add("hidden");
+      if (btnRetry) btnRetry.disabled = true;
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain"
+          },
+          body: JSON.stringify(savePayload)
+        });
+        const gradingData = await res.json();
+
+        if (gradingData.success) {
+          isSaving = false;
+          window.removeEventListener("beforeunload", preventTabClose);
+
+          // Cambiar a la pantalla de resultado final
+          transitionScreen(document.getElementById("screenSaving"), screenResult);
+
+          if (savePayload.estado === "Anulado") {
+            mostrarUIAnulado(detalleAnulacion);
+          } else if (gradingData.tieneExplicacion) {
+            document.getElementById("resultSubtitle").classList.remove("hidden");
+          } else {
+            document.getElementById("lblNota").innerText = gradingData.nota;
+            document.getElementById("lblTotal").innerText = gradingData.total;
+            document.getElementById("lblEstado").innerText = gradingData.estado;
+            
+            const stateColor = gradingData.estado === "Aprobado" ? "text-emerald-600" : "text-red-600";
+            document.getElementById("lblEstado").className = `text-sm font-black uppercase tracking-wide ${stateColor}`;
+            
+            document.getElementById("resultScoreContainer").classList.remove("hidden");
+          }
+        } else {
+          throw new Error(gradingData.error);
+        }
+      } catch (err) {
+        console.error("Error al registrar el examen en el servidor:", err);
+        if (btnRetry) btnRetry.disabled = false;
+        retryContainer.classList.remove("hidden");
+      }
+    }
+
+    // Configurar listener para reintentar guardado manual si falla la conexión
+    document.getElementById("btnRetrySave").addEventListener("click", () => {
+      enviarRespuestasAlServidor("");
+    });
+
+    function capturarRespuestaActual() {
+      if (currentQuestionIndex >= questions.length) return;
+      
+      const q = questions[currentQuestionIndex];
+      const indexExistente = studentAnswers.findIndex(a => a.id === q.id);
+      
+      let respuestaTexto = "";
+      if (q.tipo === "OPCIÓN MÚLTIPLE") {
+        const seleccionados = document.querySelectorAll('input[name="opciones_examen"]:checked');
+        respuestaTexto = Array.from(seleccionados).map(el => el.value).join(",");
+      } else if (q.tipo === "RESPUESTA CORTA") {
+        const input = document.getElementById("shortAnswerInput");
+        if (input) respuestaTexto = input.value.trim();
+      } else if (q.tipo === "EXPLICACIÓN") {
+        const text = document.getElementById("explanationText");
+        if (text) respuestaTexto = text.value.trim();
+      }
+
+      const obj = {
+        id: q.id,
+        pregunta: q.pregunta,
+        respuestaTexto: respuestaTexto
+      };
+
+      if (indexExistente !== -1) {
+        studentAnswers[indexExistente] = obj;
+      } else {
+        studentAnswers.push(obj);
+      }
+    }
+
+    function mostrarUIAnulado(detalleAnulacion) {
+      document.getElementById("resultIcon").className = "mx-auto w-20 h-20 rounded-full flex items-center justify-center text-white shadow-lg mb-2 bg-red-600";
+      document.getElementById("resultIcon").innerHTML = `<svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>`;
+      document.getElementById("resultTitle").innerText = "Examen Anulado";
+      document.getElementById("resultTitle").className = "text-2xl font-bold text-red-600";
+      
+      const subMsg = detalleAnulacion.includes("5 segundos") 
+        ? "El examen fue anulado automáticamente por salir del navegador por más de 5 segundos."
+        : "Se infringieron las normas de integridad académica del examen.";
+      document.getElementById("resultSubtitle").innerText = subMsg;
+      document.getElementById("resultSubtitle").className = "text-sm text-red-700 bg-red-50 py-3 px-4 rounded-2xl border border-red-100 max-w-sm mx-auto";
+      document.getElementById("resultSubtitle").classList.remove("hidden");
+      resAdvertenciasRow.classList.add("bg-red-50", "p-1.5", "rounded-lg", "border", "border-red-100");
+    }
+
+    // ==========================================
+    // UTILERÍAS & AUXILIARES
+    // ==========================================
+    function transitionScreen(fromScreen, toScreen) {
+      fromScreen.classList.remove("active");
+      fromScreen.classList.add("hidden");
+      toScreen.classList.remove("hidden");
+      toScreen.classList.add("active");
+
+      // Si entramos a la pantalla de instrucciones, solicitar permiso de micrófono con antelación.
+      // Al hacerlo ANTES de que inicie el examen (examStarted = false), el aviso flotante del navegador
+      // que pide permiso de micrófono no disparará advertencias de pérdida de foco en el sistema anti-trampa.
+      if (toScreen === screenInstructions) {
+        solicitarPermisoMicrofonoPrevio();
+      }
+    }
+
+    function solicitarPermisoMicrofonoPrevio() {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+          .then(stream => {
+            // Permiso concedido, cerrar el canal inmediatamente para no consumir recursos
+            stream.getTracks().forEach(track => track.stop());
+            console.log("Micrófono pre-autorizado con éxito.");
+          })
+          .catch(err => {
+            console.warn("Permiso de micrófono denegado o no disponible:", err);
+          });
+      }
+    }
+
+    function showAlert(element, message, type) {
+      element.classList.remove("hidden", "bg-red-50", "border-red-200", "text-red-800", "bg-emerald-50", "border-emerald-200", "text-emerald-800", "bg-amber-50", "border-amber-200", "text-amber-800");
+      
+      let icon = "";
+      if (type === "error") {
+        element.classList.add("bg-red-50", "border-red-200", "text-red-800");
+        icon = `<svg class="w-4 h-4 shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+      } else if (type === "success") {
+        element.classList.add("bg-emerald-50", "border-emerald-200", "text-emerald-800");
+        icon = `<svg class="w-4 h-4 shrink-0 text-emerald-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+      } else if (type === "warning") {
+        element.classList.add("bg-amber-50", "border-amber-200", "text-amber-800");
+        icon = `<svg class="w-4 h-4 shrink-0 text-amber-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+      }
+
+      element.innerHTML = `${icon}<span class="ml-2">${message}</span>`;
+      element.classList.remove("hidden");
+    }
+
+    function clearAlert(element) {
+      element.classList.add("hidden");
+      element.innerHTML = "";
+    }
+
+    function solicitarPantallaCompleta() {
+      const docElm = document.documentElement;
+      if (docElm.requestFullscreen) {
+        docElm.requestFullscreen().catch(e => console.log(e));
+      } else if (docElm.mozRequestFullScreen) {
+        docElm.mozRequestFullScreen().catch(e => console.log(e));
+      } else if (docElm.webkitRequestFullscreen) {
+        docElm.webkitRequestFullscreen().catch(e => console.log(e));
+      } else if (docElm.msRequestFullscreen) {
+        docElm.msRequestFullscreen().catch(e => console.log(e));
+      }
+    }
+
+    function getDirectDriveLink(url) {
+      if (!url) return "";
+      const driveRegex = /(?:\/d\/|id=)([\w-]+)/;
+      const match = url.match(driveRegex);
+      if (match && match[1]) {
+        return `https://docs.google.com/uc?export=download&id=${match[1]}`;
+      }
+      return url;
+    }
+
+    function setupWatermark(text) {
+      const container = document.getElementById("dynamicWatermark");
+      container.innerHTML = "";
+      for (let i = 0; i < 20; i++) {
+        const span = document.createElement("span");
+        span.className = "p-8 transform -rotate-12 select-none";
+        span.innerText = text;
+        container.appendChild(span);
+      }
+    }
+  </script>
+</body>
+</html>
