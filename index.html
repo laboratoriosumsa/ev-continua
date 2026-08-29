@@ -77,13 +77,72 @@
               class="w-full px-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 text-center font-bold tracking-wider text-xl transition duration-200 uppercase text-slate-700 placeholder-slate-300">
           </div>
         </div>
-        <!-- Botón de Continuar -->
-        <button id="btnContinuar" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-200/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center space-x-2 text-base">
-          <span>Continuar</span>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-        </button>
+        <!-- Botones de Acción -->
+        <div class="space-y-3">
+          <button id="btnContinuar" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-indigo-100 hover:shadow-indigo-200/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center space-x-2 text-base">
+            <span>Continuar</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
+          
+          <button id="btnIrAReporte" type="button" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 font-bold py-3 px-4 rounded-2xl active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2 text-sm">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span>Reporte de Notas</span>
+          </button>
+        </div>
         <!-- Alertas de Estado -->
         <div id="statusAlert" class="hidden rounded-2xl p-4 text-xs font-semibold border transition-all duration-300 flex items-start space-x-2.5"></div>
+      </div>
+
+      <!-- ================= PANTALLA 1.5: REPORTE DE NOTAS HISTÓRICO ================= -->
+      <div id="screenReport" class="hidden virtual-screen space-y-6">
+        <div class="space-y-4 flex-grow flex flex-col justify-center py-2">
+          <div class="mx-auto w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-600">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          </div>
+          <div class="text-center space-y-2">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Reporte de Notas</h2>
+            <p class="text-sm text-slate-400 font-medium">Ingresa tu Registro Universitario para consultar</p>
+          </div>
+          
+          <div class="space-y-3">
+            <input type="text" id="reportRUInput" placeholder="EJ. 21908754" 
+              class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 text-center font-bold tracking-wider text-lg transition duration-200 uppercase text-slate-700 placeholder-slate-300">
+            
+            <button id="btnBuscarReporte" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm">
+              Buscar Notas
+            </button>
+          </div>
+          
+          <div id="reportAlert" class="hidden rounded-2xl p-4 text-xs font-semibold border transition duration-300 flex items-start space-x-2.5"></div>
+          
+          <!-- Contenedor del Reporte Encontrado -->
+          <div id="reportResultContainer" class="hidden space-y-4">
+            <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 text-left space-y-1">
+              <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block">Estudiante</span>
+              <span id="reportStudentName" class="text-base font-bold text-slate-800">-</span>
+            </div>
+            
+            <!-- Tabla de Exámenes -->
+            <div class="border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-sm">
+              <table class="w-full text-left border-collapse text-[11px] sm:text-xs">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
+                    <th class="px-3 py-2">Examen</th>
+                    <th class="px-3 py-2 text-center">Nota</th>
+                    <th class="px-3 py-2 text-right">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="reportTableBody" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                  <!-- Inyectado dinámicamente -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <button id="btnVolverReporte" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-4 rounded-2xl active:scale-[0.99] transition duration-200 text-sm">
+          Volver al Inicio
+        </button>
       </div>
 
       <!-- ================= PANTALLA 2: SELECCIÓN Y VERIFICACIÓN DE EXAMEN ================= -->
@@ -149,8 +208,27 @@
               <li>El examen se realiza en modo de <strong>Pantalla Completa</strong> obligatorio.</li>
               <li>Si cambias de pestaña, ventana o sales de pantalla completa por <strong>más de 5 segundos</strong>, el examen se anulará automáticamente.</li>
               <li>Al <strong>2do evento cambio de ventana</strong>, el examen se auto-enviará de forma <strong>ANULADA</strong> de inmediato.</li>
-              <li>Si tu examen incluye preguntas de <strong>Grabación de Voz</strong>, autoriza el acceso al micrófono de tu dispositivo para transcribir la respuesta verbal.</li>
+              <li>Si tu examen incluye preguntas de <strong>Grabación de Voz</strong>, autoriza el acceso al micrófono para grabar tu respuesta verbal.</li>
             </ul>
+          </div>
+
+          <!-- Widget de Prueba de Micrófono -->
+          <div id="micTestWidget" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3 text-left">
+            <p class="text-xs font-bold text-slate-600 uppercase tracking-widest">Prueba tu micrófono antes de comenzar:</p>
+            <div class="flex items-center space-x-3">
+              <button id="btnTestMic" type="button" class="py-2.5 px-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-bold rounded-xl border border-indigo-200 flex items-center space-x-2 transition duration-200 text-xs">
+                <svg id="testMicIcon" class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"></path></svg>
+                <svg id="testMicSpinner" class="animate-spin h-4 w-4 text-indigo-600 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span id="testMicText">Probar micrófono</span>
+              </button>
+              <div id="testMicStatus" class="text-[11px] font-semibold text-slate-400">Presiona para validar...</div>
+            </div>
+            <div id="testMicResultBox" class="hidden bg-white border border-slate-100 rounded-xl p-3 text-xs text-slate-600 italic">
+              "La transcripción de prueba aparecerá aquí..."
+            </div>
           </div>
         </div>
 
@@ -172,7 +250,7 @@
           
           <!-- Imagen de Apoyo -->
           <div id="imageSupportContainer" class="hidden w-full flex justify-center bg-slate-50 p-2 rounded-xl border border-slate-100/60 shadow-sm max-h-48 overflow-hidden">
-            <img id="imageSupport" src="" alt="Soporte visual" class="max-h-44 object-contain rounded-lg">
+            <img id="imageSupport" src="" alt="Soporte visual" class="max-h-44 max-w-full w-auto h-auto object-contain rounded-lg shadow-sm">
           </div>
 
           <!-- Pregunta -->
@@ -184,11 +262,17 @@
           </div>
         </div>
 
-        <!-- Botón de Siguiente Pregunta -->
-        <button id="btnSiguiente" disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3.5 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed flex-shrink-0 text-base">
-          <span>Siguiente Pregunta</span>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
-        </button>
+        <!-- Botones de Acción de Navegación del Cuestionario -->
+        <div class="flex items-center space-x-3 w-full flex-shrink-0">
+          <button id="btnOmitir" type="button" class="w-1/3 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-500 font-bold py-3.5 px-4 rounded-xl transition duration-200 text-sm sm:text-base">
+            Omitir
+          </button>
+          
+          <button id="btnSiguiente" disabled class="w-2/3 bg-slate-200 text-slate-400 font-bold py-3.5 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed text-sm sm:text-base">
+            <span>Siguiente Pregunta</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
       </div>
 
       <!-- ================= PANTALLA 4.5: GUARDANDO RESPUESTAS (BLOQUEO DE SALIDA) ================= -->
@@ -323,6 +407,16 @@
     let isMicActivating = false;
     let micActivatingTimeout = null;
 
+    // Variables de audio
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioBlob = null;
+    let base64AudioData = "";
+    let audioMimeType = "";
+    let recordSeconds = 0;
+    let timerRecord = null;
+    let isRecording = false;
+
     // DOM Elements
     const screenRU = document.getElementById("screenRU");
     const screenSelection = document.getElementById("screenSelection");
@@ -337,7 +431,19 @@
     const btnIrAInstrucciones = document.getElementById("btnIrAInstrucciones");
     const btnEntrarExamen = document.getElementById("btnEntrarExamen");
     const btnSiguiente = document.getElementById("btnSiguiente");
+    const btnOmitir = document.getElementById("btnOmitir");
     const btnReanudar = document.getElementById("btnReanudar");
+    
+    // Elementos Reporte de Notas
+    const btnIrAReporte = document.getElementById("btnIrAReporte");
+    const btnVolverReporte = document.getElementById("btnVolverReporte");
+    const btnBuscarReporte = document.getElementById("btnBuscarReporte");
+    const screenReport = document.getElementById("screenReport");
+    const reportRUInput = document.getElementById("reportRUInput");
+    const reportAlert = document.getElementById("reportAlert");
+    const reportResultContainer = document.getElementById("reportResultContainer");
+    const reportStudentName = document.getElementById("reportStudentName");
+    const reportTableBody = document.getElementById("reportTableBody");
     
     const statusAlert = document.getElementById("statusAlert");
     const welcomeMessage = document.getElementById("welcomeMessage");
@@ -412,6 +518,84 @@
           <span>Continuar</span>
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         `;
+      }
+    });
+
+    // ==========================================
+    // PORTAL: REPORTE DE NOTAS HISTÓRICO
+    // ==========================================
+    btnIrAReporte.addEventListener("click", () => {
+      clearAlert(reportAlert);
+      reportResultContainer.classList.add("hidden");
+      reportRUInput.value = registroInput.value.trim();
+      transitionScreen(screenRU, screenReport);
+    });
+
+    btnVolverReporte.addEventListener("click", () => {
+      transitionScreen(screenReport, screenRU);
+    });
+
+    btnBuscarReporte.addEventListener("click", async () => {
+      clearAlert(reportAlert);
+      reportResultContainer.classList.add("hidden");
+      
+      const reg = reportRUInput.value.trim();
+      if (!reg) {
+        showAlert(reportAlert, "Por favor ingresa tu Registro Universitario.", "error");
+        return;
+      }
+      
+      btnBuscarReporte.disabled = true;
+      const originalText = btnBuscarReporte.innerText;
+      btnBuscarReporte.innerText = "Buscando...";
+      
+      try {
+        const response = await fetch(`${SCRIPT_URL}?action=getReport&registro=${encodeURIComponent(reg)}`);
+        const data = await response.json();
+        
+        if (data.error) {
+          showAlert(reportAlert, data.error, "error");
+        } else {
+          reportStudentName.innerText = data.nombre;
+          reportTableBody.innerHTML = "";
+          
+          data.examenes.forEach(ex => {
+            const tr = document.createElement("tr");
+            
+            // Determinar color de badge de estado
+            let badgeClass = "bg-slate-100 text-slate-600";
+            if (ex.estado === "Aprobado") {
+              badgeClass = "bg-emerald-100 text-emerald-800";
+            } else if (ex.estado === "Reprobado") {
+              badgeClass = "bg-red-100 text-red-800";
+            } else if (ex.estado === "Anulado") {
+              badgeClass = "bg-rose-900 text-white";
+            } else if (ex.estado === "Pendiente") {
+              badgeClass = "bg-amber-100 text-amber-800 animate-pulse";
+            } else if (ex.estado === "No rendido") {
+              badgeClass = "bg-blue-50 text-blue-600";
+            }
+            
+            tr.innerHTML = `
+              <td class="px-3 py-2.5 font-bold text-slate-800">${ex.examen}</td>
+              <td class="px-3 py-2.5 text-center font-mono font-bold">${ex.nota}</td>
+              <td class="px-3 py-2.5 text-right">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${badgeClass}">
+                  ${ex.estado}
+                </span>
+              </td>
+            `;
+            reportTableBody.appendChild(tr);
+          });
+          
+          reportResultContainer.classList.remove("hidden");
+        }
+      } catch (err) {
+        console.error("Error al buscar reporte:", err);
+        showAlert(reportAlert, "Error de red al consultar el reporte.", "error");
+      } finally {
+        btnBuscarReporte.disabled = false;
+        btnBuscarReporte.innerText = originalText;
       }
     });
 
@@ -493,6 +677,81 @@
     });
 
     // ==========================================
+    // PRUEBA DE MICRÓFONO EN PANTALLA DE INSTRUCCIONES
+    // ==========================================
+    const btnTestMic = document.getElementById("btnTestMic");
+    const testMicText = document.getElementById("testMicText");
+    const testMicIcon = document.getElementById("testMicIcon");
+    const testMicSpinner = document.getElementById("testMicSpinner");
+    const testMicStatus = document.getElementById("testMicStatus");
+    const testMicResultBox = document.getElementById("testMicResultBox");
+    
+    let testRecognition = null;
+    let isTestingMic = false;
+    
+    btnTestMic.addEventListener("click", () => {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        testMicStatus.innerHTML = "<span class='text-red-600 font-bold'>API no soportada.</span>";
+        return;
+      }
+      
+      if (isTestingMic) {
+        if (testRecognition) testRecognition.stop();
+        return;
+      }
+      
+      try {
+        isTestingMic = true;
+        btnTestMic.classList.remove("bg-indigo-50", "text-indigo-600", "border-indigo-200");
+        btnTestMic.classList.add("bg-rose-50", "text-rose-600", "border-rose-200");
+        testMicText.innerText = "Detener Prueba";
+        testMicIcon.classList.add("hidden");
+        testMicSpinner.classList.remove("hidden");
+        testMicStatus.innerHTML = "<span class='text-rose-600 animate-pulse font-bold'>Habla ahora...</span>";
+        testMicResultBox.innerText = "";
+        testMicResultBox.classList.remove("hidden");
+        
+        testRecognition = new SpeechRecognition();
+        testRecognition.lang = 'es-ES';
+        testRecognition.continuous = false;
+        testRecognition.interimResults = false;
+        
+        testRecognition.onresult = (event) => {
+          const resultText = event.results[0][0].transcript;
+          testMicResultBox.innerText = `"${resultText}"`;
+          testMicStatus.innerHTML = "<span class='text-emerald-600 font-bold'>¡Micrófono funcionando correctamente! ✓</span>";
+        };
+        
+        testRecognition.onerror = (e) => {
+          console.warn("Error en test de micrófono:", e.error);
+          testMicStatus.innerHTML = `<span class='text-red-600 font-bold'>Error: ${e.error}</span>`;
+        };
+        
+        testRecognition.onend = () => {
+          isTestingMic = false;
+          btnTestMic.classList.remove("bg-rose-50", "text-rose-600", "border-rose-200");
+          btnTestMic.classList.add("bg-indigo-50", "text-indigo-600", "border-indigo-200");
+          testMicText.innerText = "Probar micrófono";
+          testMicIcon.classList.remove("hidden");
+          testMicSpinner.classList.add("hidden");
+        };
+        
+        testRecognition.start();
+        
+      } catch (err) {
+        console.error("No se pudo iniciar el test de reconocimiento:", err);
+        testMicStatus.innerHTML = `<span class='text-red-600 font-bold'>Error al iniciar: ${err.message}</span>`;
+        isTestingMic = false;
+        btnTestMic.classList.remove("bg-rose-50", "text-rose-600", "border-rose-200");
+        btnTestMic.classList.add("bg-indigo-50", "text-indigo-600", "border-indigo-200");
+        testMicText.innerText = "Probar micrófono";
+        testMicIcon.classList.remove("hidden");
+        testMicSpinner.classList.add("hidden");
+      }
+    });
+
+    // ==========================================
     // PANTALLA 4: COMENZAR EXAMEN (Cargar Preguntas)
     // ==========================================
     btnEntrarExamen.addEventListener("click", async () => {
@@ -543,6 +802,12 @@
       currentQuestionIndex = index;
       currentQuestionNum.innerText = index + 1;
       desactivarBotonSiguiente();
+      
+      // Resetear estados de grabación de la pregunta anterior
+      base64AudioData = "";
+      audioMimeType = "";
+      audioBlob = null;
+      audioChunks = [];
       
       const q = questions[index];
 
@@ -629,118 +894,137 @@
             <svg id="micIcon" class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z"></path>
             </svg>
-            <span id="micText">Grabar respuesta verbal</span>
+            <span id="micText">Iniciar Grabación</span>
           </button>
-          <textarea id="explanationText" rows="4" placeholder="La transcripción de tu voz aparecerá aquí en tiempo real. Si lo deseas, puedes corregir o complementar tu respuesta usando el teclado." class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 font-semibold text-slate-700 text-sm placeholder-slate-300"></textarea>
+          
+          <div id="playbackContainer" class="hidden space-y-2">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Escucha tu grabación antes de continuar:</span>
+            <audio id="audioPlayback" controls class="w-full"></audio>
+          </div>
+          
+          <div class="space-y-1">
+            <label for="explanationText" class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">O escribe tu explicación aquí (Alternativa):</label>
+            <textarea id="explanationText" rows="3" placeholder="Si tienes problemas con tu micrófono, escribe tu respuesta aquí..." class="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 font-semibold text-slate-700 text-sm placeholder-slate-300"></textarea>
+          </div>
         `;
         answerArea.appendChild(voiceDiv);
-        setupVoiceRecognition();
+        setupAudioRecorder();
       }
     }
 
     // ==========================================
-    // RECONOCIMIENTO DE VOZ (Speech-to-Text)
+    // GRABADOR DE AUDIO REAL (MediaRecorder API)
     // ==========================================
-    let recognition = null;
-    let isRecording = false;
-
-    function setupVoiceRecognition() {
+    function setupAudioRecorder() {
       const btnMic = document.getElementById("btnMic");
       const micText = document.getElementById("micText");
       const micIcon = document.getElementById("micIcon");
       const micSpinner = document.getElementById("micSpinner");
+      const audioPlayback = document.getElementById("audioPlayback");
+      const playbackContainer = document.getElementById("playbackContainer");
       const explanationText = document.getElementById("explanationText");
 
       explanationText.addEventListener("input", verificarSelecciones);
 
-      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-        micText.innerText = "Micrófono no compatible";
-        btnMic.disabled = true;
-        btnMic.className = "w-full py-4 bg-slate-100 text-slate-400 font-bold rounded-2xl border border-slate-200 cursor-not-allowed flex items-center justify-center space-x-2";
-        return;
-      }
+      // Limpiar el búfer y variables temporales al cargar
+      base64AudioData = "";
+      audioMimeType = "";
+      audioBlob = null;
+      audioChunks = [];
 
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false;
-      recognition.lang = 'es-ES';
+      btnMic.addEventListener("click", async () => {
+        if (isRecording) {
+          detenerGrabacion();
+        } else {
+          try {
+            // Activar inmunidad de foco por 3 segundos para el prompt de permisos del micrófono
+            isMicActivating = true;
+            if (micActivatingTimeout) clearTimeout(micActivatingTimeout);
+            micActivatingTimeout = setTimeout(() => {
+              isMicActivating = false;
+            }, 3000);
 
-      recognition.onresult = (event) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            audioChunks = [];
+            
+            // Elegir un tipo de compresión soportado
+            let options = { mimeType: 'audio/webm' };
+            if (!MediaRecorder.isTypeSupported('audio/webm')) {
+              options = { mimeType: 'audio/mp4' };
+              if (!MediaRecorder.isTypeSupported('audio/mp4')) {
+                options = {}; 
+              }
+            }
+
+            mediaRecorder = new MediaRecorder(stream, options);
+            audioMimeType = mediaRecorder.mimeType || "audio/webm";
+
+            mediaRecorder.ondataavailable = (event) => {
+              if (event.data && event.data.size > 0) {
+                audioChunks.push(event.data);
+              }
+            };
+
+            mediaRecorder.onstop = () => {
+              audioBlob = new Blob(audioChunks, { type: audioMimeType });
+              const audioUrl = URL.createObjectURL(audioBlob);
+              audioPlayback.src = audioUrl;
+              playbackContainer.classList.remove("hidden");
+              
+              // Convertir a Base64 para guardarlo dinámicamente en Sheets/Drive
+              const reader = new FileReader();
+              reader.readAsDataURL(audioBlob);
+              reader.onloadend = () => {
+                base64AudioData = reader.result.split(',')[1];
+                verificarSelecciones();
+              };
+
+              // Apagar el stream de audio
+              stream.getTracks().forEach(track => track.stop());
+            };
+
+            isRecording = true;
+            recordSeconds = 0;
+            micText.innerText = "🔴 Grabando... (0s) - Detener";
+            btnMic.classList.remove("bg-indigo-50", "text-indigo-600", "border-indigo-200");
+            btnMic.classList.add("bg-rose-50", "text-rose-600", "border-rose-200", "animate-pulse");
+            micIcon.classList.add("hidden");
+            micSpinner.classList.remove("hidden");
+
+            timerRecord = setInterval(() => {
+              recordSeconds++;
+              micText.innerText = `🔴 Grabando... (${recordSeconds}s) - Detener`;
+            }, 1000);
+
+            mediaRecorder.start();
+
+          } catch (err) {
+            console.error("Error al acceder al micrófono:", err);
+            alert("No se pudo iniciar la grabación de audio. Asegúrate de otorgar permisos al micrófono.");
+            isRecording = false;
+            isMicActivating = false;
           }
         }
-        if (finalTranscript) {
-          explanationText.value += (explanationText.value ? ' ' : '') + finalTranscript;
-          verificarSelecciones();
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-        // Si el error es "aborted" o "no-speech", no apagamos la grabación visual.
-        // Dejamos que onend intente reiniciar el canal de audio.
-        if (event.error !== 'no-speech' && event.error !== 'aborted') {
-          detenerGrabacion(btnMic, micText, micIcon, micSpinner);
-          isRecording = false;
-        }
-      };
-
-      recognition.onend = () => {
-        // Al haber silencios prolongados, el navegador apaga el reconocimiento.
-        // Lo reiniciamos con un retraso de 300ms para evitar colisiones en el hardware de audio.
-        if (isRecording) {
-          setTimeout(() => {
-            try {
-              if (isRecording) {
-                recognition.start();
-                console.log("Reconocimiento de voz reiniciado tras silencio.");
-              }
-            } catch (e) {
-              console.warn("Error al reiniciar reconocimiento de voz:", e);
-            }
-          }, 300);
-        }
-      };
-
-      btnMic.addEventListener("click", () => {
-        if (isRecording) {
-          isRecording = false;
-          recognition.stop();
-          detenerGrabacion(btnMic, micText, micIcon, micSpinner);
-        } else {
-          // Iniciar ventana de inmunidad de foco (blur) por 3 segundos por si surge ventana de permisos
-          isMicActivating = true;
-          if (micActivatingTimeout) clearTimeout(micActivatingTimeout);
-          micActivatingTimeout = setTimeout(() => {
-            isMicActivating = false;
-          }, 3000);
-
-          isRecording = true;
-          explanationText.focus();
-          recognition.start();
-          iniciarGrabacionVisual(btnMic, micText, micIcon, micSpinner);
-        }
       });
-    }
 
-    function iniciarGrabacionVisual(btn, text, icon, spinner) {
-      text.innerText = "🔴 Grabando respuesta... Haz clic para detener";
-      btn.classList.remove("bg-indigo-50", "text-indigo-600", "border-indigo-200");
-      btn.classList.add("bg-rose-50", "text-rose-600", "border-rose-200", "animate-pulse");
-      icon.classList.add("hidden");
-      spinner.classList.remove("hidden");
-    }
-
-    function detenerGrabacion(btn, text, icon, spinner) {
-      text.innerText = "Grabar respuesta verbal";
-      btn.classList.remove("bg-rose-50", "text-rose-600", "border-rose-200", "animate-pulse");
-      btn.classList.add("bg-indigo-50", "text-indigo-600", "border-indigo-200");
-      icon.classList.remove("hidden");
-      spinner.classList.add("hidden");
+      function detenerGrabacion() {
+        if (mediaRecorder && isRecording) {
+          mediaRecorder.stop();
+          isRecording = false;
+          
+          if (timerRecord) {
+            clearInterval(timerRecord);
+            timerRecord = null;
+          }
+          
+          micText.innerText = "Volver a Grabar";
+          btnMic.classList.remove("bg-rose-50", "text-rose-600", "border-rose-200", "animate-pulse");
+          btnMic.classList.add("bg-indigo-50", "text-indigo-600", "border-indigo-200");
+          micIcon.classList.remove("hidden");
+          micSpinner.classList.add("hidden");
+        }
+      }
     }
 
     // ==========================================
@@ -758,7 +1042,9 @@
         respondida = input && input.value.trim().length > 0;
       } else if (q.tipo === "EXPLICACIÓN") {
         const text = document.getElementById("explanationText");
-        respondida = text && text.value.trim().length > 0;
+        const hasText = text && text.value.trim().length > 0;
+        const hasAudio = base64AudioData.length > 0;
+        respondida = hasText || hasAudio;
       }
 
       if (respondida) {
@@ -770,25 +1056,67 @@
 
     function desactivarBotonSiguiente() {
       btnSiguiente.disabled = true;
-      btnSiguiente.className = "w-full bg-slate-200 text-slate-400 font-bold py-3.5 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed flex-shrink-0 text-base";
+      btnSiguiente.className = "w-2/3 bg-slate-200 text-slate-400 font-bold py-3.5 px-4 rounded-xl transition duration-200 flex items-center justify-center space-x-2 cursor-not-allowed";
     }
 
     function activarBotonSiguiente() {
       btnSiguiente.disabled = false;
-      btnSiguiente.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-100 active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2 cursor-pointer flex-shrink-0 text-base sm:text-lg";
+      btnSiguiente.className = "w-2/3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-100 active:scale-[0.99] transition duration-200 flex items-center justify-center space-x-2 cursor-pointer";
     }
 
     // ==========================================
     // CONTROL DE NAVEGACIÓN
     // ==========================================
-    btnSiguiente.addEventListener("click", () => {
-      if (isRecording && recognition) {
+    // Evento de Omitir Pregunta
+    btnOmitir.addEventListener("click", () => {
+      // Detener grabación si está en curso
+      if (isRecording && mediaRecorder) {
+        try {
+          mediaRecorder.stop();
+        } catch (e) {
+          console.warn("Error al detener grabador en omitir:", e);
+        }
         isRecording = false;
-        recognition.stop();
+        if (timerRecord) {
+          clearInterval(timerRecord);
+          timerRecord = null;
+        }
+      }
+
+      const q = questions[currentQuestionIndex];
+      
+      // Guardar respuesta vacía (Omitida)
+      studentAnswers.push({
+        id: q.id,
+        pregunta: q.pregunta,
+        respuestaTexto: "[Omitida]"
+      });
+
+      if (currentQuestionIndex + 1 < questions.length) {
+        cargarPregunta(currentQuestionIndex + 1);
+      } else {
+        finalizarPrueba("Completado");
+      }
+    });
+
+    btnSiguiente.addEventListener("click", () => {
+      // Detener grabación si está activa
+      if (isRecording && mediaRecorder) {
+        try {
+          mediaRecorder.stop();
+        } catch (e) {
+          console.warn("Error al detener grabador en siguiente:", e);
+        }
+        isRecording = false;
+        if (timerRecord) {
+          clearInterval(timerRecord);
+          timerRecord = null;
+        }
       }
 
       const q = questions[currentQuestionIndex];
       let respuestaTexto = "";
+      let esAudio = false;
 
       if (q.tipo === "OPCIÓN MÚLTIPLE") {
         const seleccionados = document.querySelectorAll('input[name="opciones_examen"]:checked');
@@ -797,13 +1125,24 @@
         respuestaTexto = document.getElementById("shortAnswerInput").value.trim();
       } else if (q.tipo === "EXPLICACIÓN") {
         respuestaTexto = document.getElementById("explanationText").value.trim();
+        if (base64AudioData && base64AudioData.length > 0) {
+          esAudio = true;
+        }
       }
 
-      studentAnswers.push({
+      const ansObj = {
         id: q.id,
         pregunta: q.pregunta,
-        respuestaTexto: respuestaTexto
-      });
+        respuestaTexto: esAudio ? `[Audio Grabado: ${audioMimeType}]` : respuestaTexto
+      };
+
+      if (esAudio) {
+        ansObj.esAudio = true;
+        ansObj.audioData = base64AudioData;
+        ansObj.audioMimeType = audioMimeType;
+      }
+
+      studentAnswers.push(ansObj);
 
       if (currentQuestionIndex + 1 < questions.length) {
         cargarPregunta(currentQuestionIndex + 1);
@@ -859,11 +1198,16 @@
 
       // Si es un evento blur (pérdida de foco):
       if (e && e.type === "blur") {
-        // 1. Ignorar si el usuario está activando el micrófono (para evitar la alerta flotante del navegador)
+        // 1. Ignorar si el elemento enfocado actualmente es un input o un textarea (evita falsas alertas con el teclado móvil)
+        const activeTag = document.activeElement ? document.activeElement.tagName : "";
+        if (activeTag === "INPUT" || activeTag === "TEXTAREA") {
+          return;
+        }
+        // 2. Ignorar si el usuario está activando el micrófono (para evitar la alerta flotante del navegador)
         if (isMicActivating) {
           return;
         }
-        // 2. Si el navegador bloqueó la pantalla completa (restricción iframe de Google Sites),
+        // 3. Si el navegador bloqueó la pantalla completa (restricción iframe de Google Sites),
         // ignoramos el evento "blur" para evitar falsos positivos al hacer clic en los márgenes de Google Sites.
         if (!document.fullscreenElement) {
           return;
@@ -935,9 +1279,17 @@
       warningOverlay.classList.add("hidden");
       timerContainer.classList.add("hidden");
 
-      if (isRecording && recognition) {
+      if (isRecording && mediaRecorder) {
         isRecording = false;
-        recognition.stop();
+        try {
+          mediaRecorder.stop();
+        } catch (e) {
+          console.warn("Error al detener grabación al finalizar:", e);
+        }
+        if (timerRecord) {
+          clearInterval(timerRecord);
+          timerRecord = null;
+        }
       }
 
       // Cerrar pantalla completa si está activa
@@ -1066,8 +1418,14 @@
       const obj = {
         id: q.id,
         pregunta: q.pregunta,
-        respuestaTexto: respuestaTexto
+        respuestaTexto: (base64AudioData && base64AudioData.length > 0) ? `[Audio Grabado: ${audioMimeType}]` : respuestaTexto
       };
+
+      if (base64AudioData && base64AudioData.length > 0) {
+        obj.esAudio = true;
+        obj.audioData = base64AudioData;
+        obj.audioMimeType = audioMimeType;
+      }
 
       if (indexExistente !== -1) {
         studentAnswers[indexExistente] = obj;
