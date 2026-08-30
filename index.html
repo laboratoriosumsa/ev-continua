@@ -121,6 +121,17 @@
               <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block">Estudiante</span>
               <span id="reportStudentName" class="text-base font-bold text-slate-800">-</span>
             </div>
+
+            <!-- Promedio General -->
+            <div id="reportAverageContainer" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-left flex justify-between items-center hidden">
+              <div>
+                <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">Promedio General</span>
+                <span class="text-[10px] text-slate-400 font-medium">De evaluaciones completadas</span>
+              </div>
+              <div class="text-right">
+                <span id="reportAverageScore" class="text-2xl font-black text-emerald-700 tracking-tight">-</span>
+              </div>
+            </div>
             
             <!-- Tabla de Exámenes -->
             <div class="border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-sm">
@@ -129,6 +140,7 @@
                   <tr class="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
                     <th class="px-3 py-2">Examen</th>
                     <th class="px-3 py-2 text-center">Nota</th>
+                    <th class="px-3 py-2 text-center">Porcentaje</th>
                     <th class="px-3 py-2 text-right">Estado</th>
                   </tr>
                 </thead>
@@ -559,6 +571,9 @@
           reportStudentName.innerText = data.nombre;
           reportTableBody.innerHTML = "";
           
+          let sumPct = 0;
+          let countPct = 0;
+          
           data.examenes.forEach(ex => {
             const tr = document.createElement("tr");
             
@@ -579,6 +594,7 @@
             tr.innerHTML = `
               <td class="px-3 py-2.5 font-bold text-slate-800">${ex.examen}</td>
               <td class="px-3 py-2.5 text-center font-mono font-bold">${ex.nota}</td>
+              <td class="px-3 py-2.5 text-center font-mono font-bold text-slate-500">${ex.porcentaje}</td>
               <td class="px-3 py-2.5 text-right">
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${badgeClass}">
                   ${ex.estado}
@@ -586,7 +602,24 @@
               </td>
             `;
             reportTableBody.appendChild(tr);
+            
+            // Contabilizar promedios para exámenes completados
+            if (ex.porcentajeRaw !== null && ex.porcentajeRaw !== undefined && (ex.estado === "Aprobado" || ex.estado === "Reprobado" || ex.estado === "Anulado")) {
+              sumPct += Number(ex.porcentajeRaw);
+              countPct++;
+            }
           });
+          
+          // Mostrar u ocultar contenedor de promedio general
+          const reportAverageContainer = document.getElementById("reportAverageContainer");
+          const reportAverageScore = document.getElementById("reportAverageScore");
+          if (countPct > 0) {
+            const avg = sumPct / countPct;
+            reportAverageScore.innerText = avg.toFixed(1) + "%";
+            reportAverageContainer.classList.remove("hidden");
+          } else {
+            reportAverageContainer.classList.add("hidden");
+          }
           
           reportResultContainer.classList.remove("hidden");
         }
@@ -862,10 +895,9 @@
           input.addEventListener("change", verificarSelecciones);
           
           div.addEventListener("click", (e) => {
-            // Si el usuario hace clic en el área vacía del contenedor div, alternamos el estado manualmente
-            if (e.target === div) {
-              input.checked = isMultiple ? !input.checked : true;
-              // Disparar el evento de cambio nativo
+            // Evitar que el clic en el input o el label interfiera con el comportamiento nativo del navegador
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+              input.checked = !input.checked;
               input.dispatchEvent(new Event('change'));
             }
           });
