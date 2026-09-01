@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
   <title>Sistema de Evaluación Continua</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,6 +17,10 @@
       -ms-user-select: none;
       margin: 0;
       padding: 0;
+    }
+    input, textarea {
+      scroll-margin-top: 70px;
+      scroll-margin-bottom: 140px;
     }
     .watermark {
       background-image: repeating-linear-gradient(45deg, rgba(229, 231, 235, 0.1) 0px, rgba(229, 231, 235, 0.1) 100px, transparent 100px, transparent 200px);
@@ -54,8 +58,8 @@
   </header>
 
   <!-- Contenido Principal -->
-  <main class="flex-grow flex items-center justify-center p-4 sm:p-6 z-10">
-    <div id="mainCard" class="w-full max-w-md bg-white rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.08)] border border-slate-100 p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between min-h-[460px]">
+  <main class="flex-grow flex items-center justify-center p-3 sm:p-6 z-10 transition-all duration-200">
+    <div id="mainCard" class="w-full max-w-md bg-white rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.08)] border border-slate-100 p-5 sm:p-8 relative flex flex-col justify-between min-h-[420px] sm:min-h-[460px]">
 
       <!-- ================= PANTALLA 1: INGRESO DE REGISTRO UNIVERSITARIO ================= -->
       <div id="screenRU" class="virtual-screen active space-y-6">
@@ -1253,6 +1257,15 @@
 
       lanzarAdvertencia("Pérdida de foco o salida de pestaña del navegador");
     }
+
+    // Auto-desplazamiento para asegurar que el teclado móvil nunca tape los campos de texto
+    document.addEventListener("focusin", (e) => {
+      if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) {
+        setTimeout(() => {
+          e.target.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+      }
+    });
 
     // Al regresar / enfocar
     window.addEventListener("focus", () => {
