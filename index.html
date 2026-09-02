@@ -255,6 +255,15 @@
 
       <!-- ================= PANTALLA 4: MOTOR DE PREGUNTAS ================= -->
       <div id="screenQuiz" class="hidden virtual-screen space-y-4">
+        <!-- Banner de Alerta de Desconexión de Red -->
+        <div id="networkAlertBanner" class="hidden bg-amber-500 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center justify-between shadow-sm animate-pulse flex-shrink-0">
+          <div class="flex items-center space-x-1.5">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 4.243a9 9 0 01-5.657-2.829m0 0l2.829-2.829m-2.829 2.829L3 21m2.829-15.364a9 9 0 015.657-2.829m0 0l2.829 2.829M9.879 9.879a3 3 0 014.242 0M3 3l18 18"></path></svg>
+            <span>Sin conexión a internet. Esperando...</span>
+          </div>
+          <span class="font-mono bg-amber-600 px-2 py-0.5 rounded-md text-[10px]"><span id="netCountdown">120</span>s</span>
+        </div>
+
         <!-- Indicador de Progreso -->
         <div class="flex justify-between items-center border-b border-slate-100 pb-2 flex-shrink-0">
           <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pregunta <span id="currentQuestionNum">1</span> de <span id="totalQuestionsNum">10</span></span>
@@ -314,6 +323,26 @@
             <button id="btnRetrySave" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm">
               Reintentar Guardar Respuestas
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= PANTALLA 4.8: ERROR DE RED CONTINUO (2 MINUTOS) ================= -->
+      <div id="screenNetworkError" class="hidden virtual-screen text-center space-y-6 flex-col justify-center items-center py-8">
+        <div class="space-y-4 flex-grow flex flex-col justify-center items-center">
+          <div class="mx-auto w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center text-rose-600 mb-2 border border-rose-100 shadow-sm">
+            <svg class="w-10 h-10 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 4.243a9 9 0 01-5.657-2.829m0 0l2.829-2.829m-2.829 2.829L3 21m2.829-15.364a9 9 0 015.657-2.829m0 0l2.829 2.829M9.879 9.879a3 3 0 014.242 0M3 3l18 18"></path>
+            </svg>
+          </div>
+          <div class="space-y-2 max-w-xs mx-auto">
+            <h2 class="text-xl font-extrabold text-slate-800 tracking-tight leading-snug">Problema de Red</h2>
+            <div class="bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-2xl p-4 shadow-sm">
+              Problema de Red, solicite al docente un nuevo examen.
+            </div>
+            <p class="text-xs text-slate-400 font-medium">
+              La conexión a internet se interrumpió por más de 2 minutos durante la evaluación.
+            </p>
           </div>
         </div>
       </div>
@@ -803,33 +832,33 @@
           throw new Error(responseData.error);
         }
 
-        questions = responseData.preguntas;
-        totalSeconds = responseData.tiempoExamen || 240;
-      } catch (err) {
-        console.error("Error al obtener preguntas:", err);
-        alert("Error de red al obtener preguntas. Cargando banco offline de pruebas.");
-        // Fallback
-        questions = [
-          { id: 1, tipo: "OPCIÓN MÚLTIPLE", pregunta: "Prueba Offline: ¿Cuál es un tipo de desperdicio?", opciones: ["Sobreproducción", "Talento", "Transporte"], seleccionMultiple: false },
-          { id: 2, tipo: "RESPUESTA CORTA", pregunta: "Prueba Offline: Sigla que significa 'Mapeo de Flujo de Valor'" },
-          { id: 3, tipo: "EXPLICACIÓN", pregunta: "Prueba Offline: Explica verbalmente qué es un cuello de botella." }
-        ];
-        totalSeconds = 120;
-      }
+        if (!responseData.preguntas || responseData.preguntas.length === 0) {
+          throw new Error("No se encontraron preguntas en el banco de evaluación.");
+        }
 
-      initialTotalSeconds = totalSeconds;
-      totalQuestionsNum.innerText = questions.length;
-      
-      solicitarPantallaCompleta();
-      transitionScreen(screenInstructions, screenQuiz);
-      
-      headerTitle.innerText = `EVALUACIÓN: ${selectedExam}`;
-      timerContainer.classList.remove("hidden");
-      warningBadge.classList.remove("hidden");
-      
-      examStarted = true;
-      iniciarTemporizador();
-      cargarPregunta(0);
+        questions = responseData.preguntas;
+        totalSeconds = responseData.tiempoExamen || (questions.length * 30);
+        initialTotalSeconds = totalSeconds;
+        totalQuestionsNum.innerText = questions.length;
+        
+        solicitarPantallaCompleta();
+        transitionScreen(screenInstructions, screenQuiz);
+        
+        headerTitle.innerText = `EVALUACIÓN: ${selectedExam}`;
+        timerContainer.classList.remove("hidden");
+        warningBadge.classList.remove("hidden");
+        
+        examStarted = true;
+        iniciarTemporizador();
+        iniciarMonitoreoRed();
+        cargarPregunta(0);
+
+      } catch (err) {
+        console.error("Error al obtener preguntas del servidor:", err);
+        btnEntrarExamen.disabled = false;
+        btnEntrarExamen.innerText = "Reintentar entrar al examen";
+        alert("⚠️ Error de conexión con el servidor. No se pudieron descargar las preguntas del examen.\n\nPor favor, verifica tu conexión a internet e inténtalo de nuevo.");
+      }
     });
 
     // ==========================================
@@ -1128,6 +1157,10 @@
         respuestaTexto: "[Omitida]"
       });
 
+      try {
+        sessionStorage.setItem("current_exam_answers", JSON.stringify(studentAnswers));
+      } catch (e) {}
+
       if (currentQuestionIndex + 1 < questions.length) {
         cargarPregunta(currentQuestionIndex + 1);
       } else {
@@ -1179,6 +1212,10 @@
       }
 
       studentAnswers.push(ansObj);
+
+      try {
+        sessionStorage.setItem("current_exam_answers", JSON.stringify(studentAnswers));
+      } catch (e) {}
 
       if (currentQuestionIndex + 1 < questions.length) {
         cargarPregunta(currentQuestionIndex + 1);
@@ -1314,12 +1351,92 @@
     });
 
     // ==========================================
+    // MONITOREO DE CONECTIVIDAD DE RED (REGLA 2 MINUTOS)
+    // ==========================================
+    let offlineSeconds = 0;
+    let offlineInterval = null;
+    const networkAlertBanner = document.getElementById("networkAlertBanner");
+    const netCountdown = document.getElementById("netCountdown");
+
+    function iniciarMonitoreoRed() {
+      offlineSeconds = 0;
+      if (offlineInterval) clearInterval(offlineInterval);
+
+      offlineInterval = setInterval(() => {
+        if (!examStarted || examFinished) {
+          if (offlineInterval) clearInterval(offlineInterval);
+          return;
+        }
+
+        if (!navigator.onLine) {
+          offlineSeconds++;
+          if (networkAlertBanner) {
+            networkAlertBanner.classList.remove("hidden");
+            const remaining = Math.max(0, 120 - offlineSeconds);
+            if (netCountdown) netCountdown.innerText = remaining;
+          }
+
+          if (offlineSeconds >= 120) {
+            // Se cumplieron 2 minutos continuos sin conexión
+            clearInterval(offlineInterval);
+            detenerExamenPorCorteDeRed();
+          }
+        } else {
+          // Conexión restablecida
+          if (offlineSeconds > 0) {
+            offlineSeconds = 0;
+            if (networkAlertBanner) networkAlertBanner.classList.add("hidden");
+          }
+        }
+      }, 1000);
+    }
+
+    window.addEventListener("offline", () => {
+      if (examStarted && !examFinished && networkAlertBanner) {
+        networkAlertBanner.classList.remove("hidden");
+        if (netCountdown) netCountdown.innerText = 120 - offlineSeconds;
+      }
+    });
+
+    window.addEventListener("online", () => {
+      offlineSeconds = 0;
+      if (networkAlertBanner) networkAlertBanner.classList.add("hidden");
+    });
+
+    function detenerExamenPorCorteDeRed() {
+      examFinished = true;
+      clearInterval(timerInterval);
+      if (tabTimeout) clearTimeout(tabTimeout);
+      if (offlineInterval) clearInterval(offlineInterval);
+      if (timerRecord) clearInterval(timerRecord);
+
+      if (isRecording && mediaRecorder) {
+        try { mediaRecorder.stop(); } catch(e) {}
+        isRecording = false;
+      }
+
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(e => console.log(e));
+      }
+
+      timerContainer.classList.add("hidden");
+      warningBadge.classList.add("hidden");
+      try {
+        sessionStorage.removeItem("current_exam_answers");
+      } catch (e) {}
+
+      transitionScreen(screenQuiz, document.getElementById("screenNetworkError"));
+    }
+
+    // ==========================================
     // GUARDADO Y RESULTADOS DINÁMICOS
     // ==========================================
     async function finalizarPrueba(motivoFin, detalleAnulacion = "") {
       examFinished = true;
       clearInterval(timerInterval);
       if (tabTimeout) clearTimeout(tabTimeout);
+      if (offlineInterval) clearInterval(offlineInterval);
+      if (networkAlertBanner) networkAlertBanner.classList.add("hidden");
       
       warningOverlay.classList.add("hidden");
       timerContainer.classList.add("hidden");
@@ -1396,44 +1513,63 @@
       retryContainer.classList.add("hidden");
       if (btnRetry) btnRetry.disabled = true;
 
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain"
-          },
-          body: JSON.stringify(savePayload)
-        });
-        const gradingData = await res.json();
+      let maxAttempts = 3;
+      let attempt = 0;
+      let gradingData = null;
 
-        if (gradingData.success) {
-          isSaving = false;
-          window.removeEventListener("beforeunload", preventTabClose);
-
-          // Cambiar a la pantalla de resultado final
-          transitionScreen(document.getElementById("screenSaving"), screenResult);
-
-          if (savePayload.estado === "Anulado") {
-            mostrarUIAnulado(detalleAnulacion);
-          } else if (gradingData.tieneExplicacion) {
-            document.getElementById("resultSubtitle").classList.remove("hidden");
+      while (attempt < maxAttempts) {
+        attempt++;
+        try {
+          const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain"
+            },
+            body: JSON.stringify(savePayload)
+          });
+          gradingData = await res.json();
+          if (gradingData && gradingData.success) {
+            break; // Envío exitoso
           } else {
-            document.getElementById("lblNota").innerText = gradingData.nota;
-            document.getElementById("lblTotal").innerText = gradingData.total;
-            document.getElementById("lblEstado").innerText = gradingData.estado;
-            
-            const stateColor = gradingData.estado === "Aprobado" ? "text-emerald-600" : "text-red-600";
-            document.getElementById("lblEstado").className = `text-sm font-black uppercase tracking-wide ${stateColor}`;
-            
-            document.getElementById("resultScoreContainer").classList.remove("hidden");
+            throw new Error(gradingData ? gradingData.error : "Respuesta no válida del servidor");
           }
-        } else {
-          throw new Error(gradingData.error);
+        } catch (err) {
+          console.warn(`Intento ${attempt} de envío falló:`, err);
+          if (attempt < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          } else {
+            console.error("Error definitivo al registrar el examen en el servidor:", err);
+            if (btnRetry) btnRetry.disabled = false;
+            retryContainer.classList.remove("hidden");
+            return;
+          }
         }
-      } catch (err) {
-        console.error("Error al registrar el examen en el servidor:", err);
-        if (btnRetry) btnRetry.disabled = false;
-        retryContainer.classList.remove("hidden");
+      }
+
+      if (gradingData && gradingData.success) {
+        isSaving = false;
+        try {
+          sessionStorage.removeItem("current_exam_answers");
+        } catch (e) {}
+        window.removeEventListener("beforeunload", preventTabClose);
+
+        // Cambiar a la pantalla de resultado final
+        transitionScreen(document.getElementById("screenSaving"), screenResult);
+
+        if (savePayload.estado === "Anulado") {
+          mostrarUIAnulado(detalleAnulacion);
+        } else if (gradingData.tieneExplicacion) {
+          document.getElementById("resultSubtitle").classList.remove("hidden");
+        } else {
+          document.getElementById("lblNota").innerText = gradingData.nota;
+          document.getElementById("lblTotal").innerText = gradingData.total;
+          document.getElementById("lblEstado").innerText = gradingData.estado;
+          
+          const stateColor = gradingData.estado === "Aprobado" ? "text-emerald-600" : "text-red-600";
+          document.getElementById("lblEstado").className = `text-sm font-black uppercase tracking-wide ${stateColor}`;
+          
+          document.getElementById("resultScoreContainer").classList.remove("hidden");
+        }
       }
     }
 
