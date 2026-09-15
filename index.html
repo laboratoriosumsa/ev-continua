@@ -41,7 +41,7 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between watermark" oncopy="return false" oncut="return false" oncontextmenu="return false">
 
   <!-- Marcador de fondo dinámico -->
-  <div id="dynamicWatermark" class="fixed inset-0 pointer-events-none flex flex-wrap justify-center items-center opacity-[0.02] text-5xl font-bold select-none z-0"></div>
+  <div id="dynamicWatermark" class="fixed inset-0 pointer-events-none flex flex-wrap justify-center items-center opacity-[0.08] text-5xl font-black select-none z-0"></div>
 
   <!-- Cabecera principal -->
   <header class="bg-indigo-900 text-white shadow-lg z-30 sticky top-0 flex-shrink-0">
@@ -300,29 +300,34 @@
         </div>
       </div>
 
-      <!-- ================= PANTALLA 4.5: GUARDANDO RESPUESTAS (BLOQUEO DE SALIDA) ================= -->
-      <div id="screenSaving" class="hidden virtual-screen text-center space-y-6 flex-col justify-center items-center py-10">
-        <div class="flex-grow flex flex-col justify-center space-y-6">
-          <div class="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-2">
+      <!-- ================= PANTALLA 4.5: GUARDANDO RESPUESTAS (BLOQUEO DE SALIDA Y OFFLINE-FIRST) ================= -->
+      <div id="screenSaving" class="hidden virtual-screen text-center space-y-6 flex-col justify-center items-center py-8">
+        <div class="flex-grow flex flex-col justify-center space-y-5 max-w-sm mx-auto">
+          <div id="savingSpinnerIcon" class="mx-auto w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 mb-1">
             <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </div>
-          <div class="space-y-3">
-            <h3 class="text-xl font-bold text-slate-800">Guardando respuestas...</h3>
-            <p class="text-xs text-slate-400 font-semibold max-w-xs mx-auto leading-relaxed">
-              Por favor, <strong>no cierres esta ventana ni retrocedas</strong>. Estamos registrando y calificando tu examen de forma segura en el servidor.
+          <div id="savingStatusContainer" class="space-y-2">
+            <h3 id="savingTitleText" class="text-xl font-bold text-slate-800">Guardando respuestas...</h3>
+            <p id="savingSubtitleText" class="text-xs text-slate-400 font-semibold max-w-xs mx-auto leading-relaxed">
+              Por favor, <strong>no cierres esta ventana ni retrocedas</strong>. Estamos registrando tu evaluación de forma segura.
             </p>
           </div>
-          <div id="savingRetryContainer" class="hidden space-y-3 max-w-xs mx-auto">
-            <div class="bg-red-50 border border-red-200 text-red-800 text-xs font-semibold rounded-2xl p-3 flex items-start space-x-2">
-              <svg class="w-4 h-4 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-              <span>Error de red. No se pudo guardar en Google Sheets.</span>
+          <div id="savingOfflineContainer" class="hidden space-y-3 max-w-xs mx-auto">
+            <div class="bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold rounded-2xl p-4 flex items-start space-x-3 text-left shadow-sm">
+              <svg class="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <p class="font-bold text-emerald-950 text-sm mb-1">Respuestas guardadas</p>
+                <p class="leading-relaxed text-xs text-emerald-800">Respuestas guardadas localmente hasta que se cuenten con una conexión a internet estable.</p>
+              </div>
             </div>
-            <button id="btnRetrySave" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 text-sm">
-              Reintentar Guardar Respuestas
-            </button>
+            <p class="text-[11px] text-slate-400 font-medium">
+              Tus respuestas ya están aseguradas en el dispositivo y se sincronizarán automáticamente en segundo plano al recuperar señal. Puedes cerrar esta ventana.
+            </p>
           </div>
         </div>
       </div>
@@ -915,28 +920,69 @@
 
         shuffledOpciones.forEach((op) => {
           const div = document.createElement("div");
-          div.className = "flex items-center border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20 rounded-xl p-4 cursor-pointer transition duration-150 select-none relative";
+          div.className = "option-card flex items-center border border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50/50 rounded-2xl p-3.5 sm:p-4 cursor-pointer transition-all duration-150 select-none relative shadow-sm";
           
           const idUnico = `opcion_${index}_${op.indexOrig}`;
           div.innerHTML = `
-            <input type="${inputType}" id="${idUnico}" name="opciones_examen" value="${op.indexOrig}" class="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer accent-indigo-600 ${inputRadius} flex-shrink-0">
-            <label for="${idUnico}" class="ml-3 font-semibold text-slate-700 w-full cursor-pointer leading-tight text-sm sm:text-base select-none">${op.texto}</label>
+            <input type="${inputType}" id="${idUnico}" name="opciones_examen" value="${op.indexOrig}" class="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer accent-indigo-600 ${inputRadius} flex-shrink-0 pointer-events-none">
+            <label for="${idUnico}" class="ml-3 font-semibold text-slate-700 w-full cursor-pointer leading-tight text-sm sm:text-base select-none pointer-events-none">${op.texto}</label>
           `;
           
           const input = div.querySelector('input');
-          // Escuchar cambios nativos en el input para evitar bugs de doble alternancia (double-toggle)
-          input.addEventListener("change", verificarSelecciones);
-          
-          div.addEventListener("click", (e) => {
-            // Evitar que el clic en el input o el label interfiera con el comportamiento nativo del navegador
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
-              input.checked = !input.checked;
-              input.dispatchEvent(new Event('change'));
+
+          function toggleOption() {
+            input.checked = !input.checked;
+            actualizarEstilosOpciones();
+            verificarSelecciones();
+            if (navigator.vibrate) {
+              try { navigator.vibrate(15); } catch(e) {}
             }
+          }
+
+          // Detección táctil anti-scroll
+          let touchStartY = 0;
+          let touchStartX = 0;
+          let isTouchMove = false;
+
+          div.addEventListener("touchstart", (e) => {
+            if (e.touches && e.touches.length > 0) {
+              touchStartX = e.touches[0].clientX;
+              touchStartY = e.touches[0].clientY;
+              isTouchMove = false;
+            }
+          }, { passive: true });
+
+          div.addEventListener("touchmove", (e) => {
+            if (e.touches && e.touches.length > 0) {
+              const diffX = Math.abs(e.touches[0].clientX - touchStartX);
+              const diffY = Math.abs(e.touches[0].clientY - touchStartY);
+              if (diffX > 8 || diffY > 8) {
+                isTouchMove = true;
+              }
+            }
+          }, { passive: true });
+
+          div.addEventListener("touchend", (e) => {
+            if (!isTouchMove) {
+              e.preventDefault();
+              toggleOption();
+            }
+          });
+
+          div.addEventListener("click", (e) => {
+            if (e.pointerType === "touch") return;
+            toggleOption();
           });
           
           answerArea.appendChild(div);
         });
+
+        // Indicador de confirmación visual de selección
+        const statusDiv = document.createElement("div");
+        statusDiv.id = "selectionStatusIndicator";
+        statusDiv.className = "text-center text-xs font-semibold text-slate-400 py-1 transition-all duration-150";
+        statusDiv.innerHTML = `<span class="text-slate-400 font-semibold">⚪ Ninguna opción seleccionada</span>`;
+        answerArea.appendChild(statusDiv);
 
       } else if (q.tipo === "RESPUESTA CORTA") {
         const input = document.createElement("input");
@@ -1095,6 +1141,42 @@
     // ==========================================
     // VALIDACIÓN DE LLENADO DE RESPUESTA
     // ==========================================
+    function actualizarEstilosOpciones() {
+      const cards = document.querySelectorAll(".option-card");
+      let checkedCount = 0;
+      cards.forEach(card => {
+        const inp = card.querySelector('input');
+        const lbl = card.querySelector('label');
+        if (inp && inp.checked) {
+          checkedCount++;
+          card.classList.remove("border-slate-200", "bg-white", "hover:border-indigo-300", "hover:bg-slate-50/50");
+          card.classList.add("border-2", "border-indigo-600", "bg-indigo-50/80", "shadow-md");
+          if (lbl) {
+            lbl.classList.remove("text-slate-700");
+            lbl.classList.add("text-indigo-950", "font-bold");
+          }
+        } else {
+          card.classList.remove("border-2", "border-indigo-600", "bg-indigo-50/80", "shadow-md");
+          card.classList.add("border", "border-slate-200", "bg-white", "hover:border-indigo-300", "hover:bg-slate-50/50");
+          if (lbl) {
+            lbl.classList.remove("text-indigo-950", "font-bold");
+            lbl.classList.add("text-slate-700");
+          }
+        }
+      });
+
+      const indicator = document.getElementById("selectionStatusIndicator");
+      if (indicator) {
+        if (checkedCount === 0) {
+          indicator.innerHTML = `<span class="text-slate-400 font-semibold">⚪ Ninguna opción seleccionada</span>`;
+        } else if (checkedCount === 1) {
+          indicator.innerHTML = `<span class="text-indigo-600 font-bold">🟢 1 opción seleccionada</span>`;
+        } else {
+          indicator.innerHTML = `<span class="text-indigo-600 font-bold">🟢 ${checkedCount} opciones seleccionadas</span>`;
+        }
+      }
+    }
+
     function verificarSelecciones() {
       const q = questions[currentQuestionIndex];
       let respondida = false;
@@ -1401,6 +1483,12 @@
     window.addEventListener("online", () => {
       offlineSeconds = 0;
       if (networkAlertBanner) networkAlertBanner.classList.add("hidden");
+      
+      // Si el examen estaba esperando conexión para enviarse, reintentar automáticamente
+      if (isSaving && savePayload) {
+        console.log("Conexión restablecida. Reintentando envío de respuestas en segundo plano...");
+        enviarRespuestasAlServidor("");
+      }
     });
 
     function detenerExamenPorCorteDeRed() {
@@ -1485,6 +1573,13 @@
         respuestas: studentAnswers
       };
 
+      // Guardar de forma permanente en localStorage para respaldo offline garantizado
+      try {
+        localStorage.setItem("EXAM_PENDIENTE_" + currentRegistro + "_" + selectedExam, JSON.stringify(savePayload));
+      } catch (e) {
+        console.warn("No se pudo escribir en localStorage:", e);
+      }
+
       // Cargar resumen básico en pantalla de resultados
       resRegistro.innerText = currentRegistro;
       resExamen.innerText = selectedExam;
@@ -1507,11 +1602,13 @@
     }
 
     async function enviarRespuestasAlServidor(detalleAnulacion = "") {
-      const btnRetry = document.getElementById("btnRetrySave");
-      const retryContainer = document.getElementById("savingRetryContainer");
+      const offlineContainer = document.getElementById("savingOfflineContainer");
+      const savingSpinnerIcon = document.getElementById("savingSpinnerIcon");
+      const savingStatusContainer = document.getElementById("savingStatusContainer");
       
-      retryContainer.classList.add("hidden");
-      if (btnRetry) btnRetry.disabled = true;
+      if (offlineContainer) offlineContainer.classList.add("hidden");
+      if (savingSpinnerIcon) savingSpinnerIcon.classList.remove("hidden");
+      if (savingStatusContainer) savingStatusContainer.classList.remove("hidden");
 
       let maxAttempts = 3;
       let attempt = 0;
@@ -1539,8 +1636,14 @@
             await new Promise(resolve => setTimeout(resolve, 2000));
           } else {
             console.error("Error definitivo al registrar el examen en el servidor:", err);
-            if (btnRetry) btnRetry.disabled = false;
-            retryContainer.classList.remove("hidden");
+            // El examen ya se encuentra seguro en localStorage.
+            // Liberamos el bloqueo de salida y mostramos la confirmación offline limpia.
+            isSaving = false;
+            window.removeEventListener("beforeunload", preventTabClose);
+            
+            if (savingSpinnerIcon) savingSpinnerIcon.classList.add("hidden");
+            if (savingStatusContainer) savingStatusContainer.classList.add("hidden");
+            if (offlineContainer) offlineContainer.classList.remove("hidden");
             return;
           }
         }
@@ -1549,6 +1652,7 @@
       if (gradingData && gradingData.success) {
         isSaving = false;
         try {
+          localStorage.removeItem("EXAM_PENDIENTE_" + currentRegistro + "_" + selectedExam);
           sessionStorage.removeItem("current_exam_answers");
         } catch (e) {}
         window.removeEventListener("beforeunload", preventTabClose);
@@ -1572,11 +1676,6 @@
         }
       }
     }
-
-    // Configurar listener para reintentar guardado manual si falla la conexión
-    document.getElementById("btnRetrySave").addEventListener("click", () => {
-      enviarRespuestasAlServidor("");
-    });
 
     function capturarRespuestaActual() {
       if (currentQuestionIndex >= questions.length) return;
@@ -1746,13 +1845,47 @@
     function setupWatermark(text) {
       const container = document.getElementById("dynamicWatermark");
       container.innerHTML = "";
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 24; i++) {
         const span = document.createElement("span");
-        span.className = "p-8 transform -rotate-12 select-none";
+        span.className = "p-6 sm:p-10 transform -rotate-12 select-none font-mono font-black text-slate-500 text-3xl sm:text-5xl";
         span.innerText = text;
         container.appendChild(span);
       }
     }
+
+    // Auto-recuperación y sincronización de exámenes respaldados offline al abrir el portal o recuperar conexión
+    function sincronizarExamenesPendientes() {
+      try {
+        if (!navigator.onLine) return;
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith("EXAM_PENDIENTE_")) {
+            const rawData = localStorage.getItem(key);
+            if (rawData) {
+              const pendingData = JSON.parse(rawData);
+              if (pendingData && pendingData.registro) {
+                console.log("Sincronizando examen respaldado offline en segundo plano...", key);
+                fetch(SCRIPT_URL, {
+                  method: "POST",
+                  headers: { "Content-Type": "text/plain" },
+                  body: JSON.stringify(pendingData)
+                }).then(res => res.json()).then(resData => {
+                  if (resData && resData.success) {
+                    console.log("Examen offline sincronizado exitosamente:", key);
+                    localStorage.removeItem(key);
+                  }
+                }).catch(e => console.warn("Reintento de sincronización offline falló:", e));
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Error al revisar exámenes offline pendientes:", e);
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", sincronizarExamenesPendientes);
+    window.addEventListener("online", sincronizarExamenesPendientes);
   </script>
 </body>
 </html>
